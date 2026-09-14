@@ -1,0 +1,11 @@
+# Zeilenenden NICHT umschreiben -- DA-20260914-100937222-656f
+#
+# Das Repo ist ein Spiegel des gebauten Pakets. Wandelt git beim
+# Auschecken LF in CRLF, weicht der Arbeitsbaum vom Paket ab, und
+# repo_spiegeln.ps1 meldete bei jedem Lauf Aenderungen, die niemand
+# geschrieben hat. Dieselbe Ueberlegung wie bei version.txt in
+# paket_bauen.ps1: der Bau darf den Stand nicht selbst veraendern.
+#
+# esel.ico ist binaer und hat hier ohnehin nichts zu suchen.
+* -text
+*.ico binary

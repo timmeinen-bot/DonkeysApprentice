@@ -1,0 +1,31 @@
+# Donkey's Apprentice -- Beispielliste
+#
+# Diese Datei geht mit dem Paket. Beim ERSTEN Start wird daraus
+# quickaccess.txt gemacht; ab dann wird nur noch quickaccess.txt gelesen
+# und diese Beispieldatei nie wieder angefasst.
+#
+# Format:
+#   [Gruppe]                 wird zur Ueberschrift
+#   Name = Ziel              Datei, Ordner oder Adresse
+#   Name = Ziel | Quelle,Nr  eigenes Symbol, z.B. shell32.dll,44
+#   Ziel                     ohne "=": der Dateiname wird zum Namen
+#
+# Umgebungsvariablen in Prozentzeichen werden aufgeloest, die Liste
+# funktioniert also auf jedem Rechner. Ziele, die mit "shell:" beginnen,
+# oeffnet der Explorer (Sonderorte wie der Papierkorb).
+
+[Start]
+Dokumente = %USERPROFILE%\Documents
+Downloads = %USERPROFILE%\Downloads
+Bilder = %USERPROFILE%\Pictures
+Papierkorb = shell:RecycleBinFolder
+
+[Windows]
+Einstellungen = shell:::{ED7BA470-8E54-465E-825C-99712043E01C}
+Programme und Features = shell:ChangeRemoveProgramsFolder
+Autostart = shell:Startup
+
+[Im Netz]
+Suche = https://duckduckgo.com
+Wetter = https://www.dwd.de
+Fahrplan = https://www.bahn.de
