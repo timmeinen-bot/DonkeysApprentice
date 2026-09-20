@@ -1,11 +1,11 @@
-# Zeilenenden NICHT umschreiben -- DA-20260914-100937222-656f
+# Do NOT rewrite line endings -- DA-20260914-100937222-656f
 #
-# Das Repo ist ein Spiegel des gebauten Pakets. Wandelt git beim
-# Auschecken LF in CRLF, weicht der Arbeitsbaum vom Paket ab, und
-# repo_spiegeln.ps1 meldete bei jedem Lauf Aenderungen, die niemand
-# geschrieben hat. Dieselbe Ueberlegung wie bei version.txt in
-# paket_bauen.ps1: der Bau darf den Stand nicht selbst veraendern.
+# The repository mirrors the built package. If git turns LF into CRLF on
+# checkout, the working tree drifts from the package, and repo_spiegeln.ps1
+# reported changes on every run that nobody had written. Same reasoning as
+# for version.txt in paket_bauen.ps1: building must not alter the state it
+# is building from.
 #
-# esel.ico ist binaer und hat hier ohnehin nichts zu suchen.
+# esel.ico is binary and has no business being touched here anyway.
 * -text
 *.ico binary

@@ -1,31 +1,31 @@
-# Donkey's Apprentice -- Beispielliste
+# Donkey's Apprentice -- example list
 #
-# Diese Datei geht mit dem Paket. Beim ERSTEN Start wird daraus
-# quickaccess.txt gemacht; ab dann wird nur noch quickaccess.txt gelesen
-# und diese Beispieldatei nie wieder angefasst.
+# This file ships with the package. On the FIRST start it is turned into
+# quickaccess.txt; from then on only quickaccess.txt is read and this
+# example file is never touched again.
 #
 # Format:
-#   [Gruppe]                 wird zur Überschrift
-#   Name = Ziel              Datei, Ordner oder Adresse
-#   Name = Ziel | Quelle,Nr  eigenes Symbol, z.B. shell32.dll,44
-#   Ziel                     ohne "=": der Dateiname wird zum Namen
+#   [Group]                    becomes a heading
+#   Name = Target              file, folder or link
+#   Name = Target | Source,Nr  custom icon, e.g. shell32.dll,44
+#   Target                     without "=": the file name becomes the name
 #
-# Umgebungsvariablen in Prozentzeichen werden aufgelöst, die Liste
-# funktioniert also auf jedem Rechner. Ziele, die mit "shell:" beginnen,
-# öffnet der Explorer (Sonderorte wie der Papierkorb).
+# Environment variables in percent signs are expanded, so the list works on
+# any machine. Targets starting with "shell:" are opened by Explorer
+# (special locations such as the recycle bin).
 
 [Start]
-Dokumente = %USERPROFILE%\Documents
+Documents = %USERPROFILE%\Documents
 Downloads = %USERPROFILE%\Downloads
-Bilder = %USERPROFILE%\Pictures
-Papierkorb = shell:RecycleBinFolder
+Pictures = %USERPROFILE%\Pictures
+Recycle Bin = shell:RecycleBinFolder
 
 [Windows]
-Einstellungen = shell:::{ED7BA470-8E54-465E-825C-99712043E01C}
-Programme und Features = shell:ChangeRemoveProgramsFolder
-Autostart = shell:Startup
+Settings = shell:::{ED7BA470-8E54-465E-825C-99712043E01C}
+Programs and Features = shell:ChangeRemoveProgramsFolder
+Startup = shell:Startup
 
-[Im Netz]
-Suche = https://duckduckgo.com
-Wetter = https://www.dwd.de
-Fahrplan = https://www.bahn.de
+[On the web]
+Search = https://duckduckgo.com
+Weather = https://www.dwd.de
+Timetable = https://www.bahn.de

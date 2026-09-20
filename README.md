@@ -1,131 +1,128 @@
 # Donkey's Apprentice
 
-Kleines Werkzeug in der Taskleiste: zeigt beim Zeigen auf das Eselsymbol
-eine Liste der wichtigsten Dateien, Ordner und Adressen. Ein Klick öffnet
-den Eintrag.
+A small tray tool: hover over the donkey icon and it shows a list of your most
+important files, folders and links. One click opens the entry.
 
-## Dateien
+## Files
 
-| Datei | Zweck |
+| File | Purpose |
 |---|---|
-| `QuickAccess.ps1` | Das Werkzeug selbst (Symbol in der Taskleiste, Überblendung) |
-| `QuickAccess.vbs` | Starter ohne sichtbares Konsolenfenster |
-| `QuickAccessAdmin.ps1` | Verwaltung: Einträge anlegen, ändern, sortieren, löschen |
-| `QuickAccessAdmin.vbs` | Starter der Verwaltung (Fensterart **1**, nicht 0) |
-| `Symbolauswahl.ps1` | Symbolgalerie: Auswahl aus den Windows-Standardsymbolen |
-| `quickaccess.txt` | Die Liste selbst, im Klartext |
-| `esel.ico` | Das Symbol in der Taskleiste |
-| `LICENSE` | Die MIT-Lizenz -- gehört in jedes Paket |
-| `admin.log`, `quickaccess.log` | Spuren zum Nachsehen, wenn etwas nicht auftaucht |
+| `QuickAccess.ps1` | The tool itself (tray icon, overlay) |
+| `QuickAccess.vbs` | Launcher without a visible console window |
+| `QuickAccessAdmin.ps1` | Management: add, edit, reorder and delete entries |
+| `QuickAccessAdmin.vbs` | Launcher for the management window (window style **1**, not 0) |
+| `Symbolauswahl.ps1` | Icon gallery: pick from the standard Windows icons |
+| `quickaccess.txt` | The list itself, in plain text |
+| `esel.ico` | The tray icon |
+| `LICENSE` | The MIT license -- belongs in every package |
+| `admin.log`, `quickaccess.log` | Traces to look at when something does not show up |
 
-## Beim ersten Start
+## First start
 
-Windows kennt das Programm noch nicht und warnt — das ist normal bei
-allem, was nicht von einem grossen Anbieter kommt.
+Windows does not know this program yet and will warn you — that is normal for
+anything that does not come from a large vendor.
 
-1. ZIP herunterladen, **Rechtsklick → Eigenschaften**, unten
-   **„Zulassen"** ankreuzen, OK.
-2. Erst danach entpacken.
-3. `QuickAccess.vbs` doppelklicken.
+1. Download the ZIP, **right-click → Properties**, tick **"Unblock"** at the
+   bottom, OK.
+2. Only then extract it.
+3. Double-click `QuickAccess.vbs`.
 
-Kommt trotzdem „Der Herausgeber konnte nicht überprüft werden":
-**Weitere Informationen → Trotzdem ausführen**.
+If "The publisher could not be verified" still appears:
+**More info → Run anyway**.
 
-> **Schritt 1 gehört an das ARCHIV, nicht an die entpackten Dateien.**
-> Wer erst entpackt und dann freigibt, muss es für jede Datei einzeln
-> tun — die Markierung ist dann schon übertragen.
+> **Step 1 applies to the ARCHIVE, not to the extracted files.**
+> If you extract first and unblock afterwards, you have to do it for every
+> single file — the mark has already been passed on by then.
 
-Die Ausführungsrichtlinie von PowerShell ist **kein** Hindernis:
-`QuickAccess.vbs` startet mit `-ExecutionPolicy Bypass`, und das gilt nur
-für diesen einen Aufruf und braucht keine Administratorrechte.
+PowerShell's execution policy is **not** an obstacle: `QuickAccess.vbs` starts
+with `-ExecutionPolicy Bypass`, which applies to that one call only and needs
+no administrator rights.
 
-## Format von `quickaccess.txt`
+## Format of `quickaccess.txt`
 
 ```
-[Gruppe]
-Name = Ziel
-Name = Ziel | Quelle,Nummer
+[Group]
+Name = Target
+Name = Target | Source,Index
 ```
 
-* `[Gruppe]` erzeugt eine Überschrift in der Überblendung.
-* `Ziel` darf eine Datei, ein Ordner oder eine Adresse sein (`http`, `https`, `mailto`).
-* Hinter dem senkrechten Strich steht ein eigenes Symbol als `Quelle,Nummer`,
-  zum Beispiel `C:\Windows\System32\imageres.dll,109`. Ohne diesen Teil nimmt
-  das Werkzeug das Symbol des Dokuments.
-* Der senkrechte Strich ist in Windows-Pfaden verboten und taugt deshalb als
-  Trennzeichen.
-* Die Datei ist **UTF-8 mit Kennung (BOM)**. Ohne Kennung liest PowerShell 5.1
-  sie als ANSI und alle Umlaute sind kaputt.
+* `[Group]` creates a heading in the overlay.
+* `Target` may be a file, a folder or a link (`http`, `https`, `mailto`).
+* After the vertical bar comes a custom icon as `Source,Index`, for example
+  `C:\Windows\System32\imageres.dll,109`. Without that part the tool uses the
+  document's own icon.
+* The vertical bar is forbidden in Windows paths, which is exactly why it works
+  as a separator.
+* The file is **UTF-8 with a byte order mark (BOM)**. Without the BOM,
+  PowerShell 5.1 reads it as ANSI and every non-ASCII character breaks.
 
-## Symbolgalerie
+## Icon gallery
 
-Die Verwaltung öffnet über `Symbol wählen ...` die Galerie. Sie zeigt die
-Symbole der üblichen Windows-Bibliotheken als Kacheln:
+The management window opens the gallery via `Symbol wählen ...`. It shows the
+icons of the usual Windows libraries as tiles:
 
-| Sammlung | Datei | Anzahl |
+| Collection | File | Count |
 |---|---|---:|
-| Allgemein | `shell32.dll` | 335 |
+| General | `shell32.dll` | 335 |
 | Modern | `imageres.dll` | 369 |
-| Geräte und Ordner | `ddores.dll` | 151 |
-| Netzwerk | `netshell.dll` | 165 |
-| Systemsteuerung | `setupapi.dll` | 62 |
+| Devices and folders | `ddores.dll` | 151 |
+| Network | `netshell.dll` | 165 |
+| Control panel | `setupapi.dll` | 62 |
 | Explorer | `explorer.exe` | 23 |
 
-Doppelklick oder `Übernehmen` gibt `Quelle,Nummer` zurück. Über
-`Andere Datei ...` lässt sich jede beliebige `.dll`, `.exe` oder `.ico` öffnen.
-Das bereits eingestellte Symbol wird beim Öffnen markiert.
+A double-click or `Übernehmen` returns `Source,Index`. Via `Andere Datei ...`
+you can open any `.dll`, `.exe` or `.ico`. The icon currently configured is
+preselected when the gallery opens.
 
-## Fallen, die hier schon zugeschlagen haben
+## Traps that have already caught us here
 
-* **`ExtractAssociatedIcon` kann keinen Index.** Es liefert immer nur das erste
-  Symbol einer Datei. Für `shell32.dll,44` braucht es `ExtractIconEx`.
-* **Zwei P/Invoke-Überladungen mit gleicher Argumentzahl kann PowerShell nicht
-  auseinanderhalten** ("Es wurden mehrere nicht eindeutige Überladungen
-  gefunden"). Lösung: zwei eigene Namen, beide über `EntryPoint` auf dieselbe
-  Windows-Funktion gelegt (`HolSymbol` und `ZaehleSymbole`).
-* **Jedes Symbolhandle muss mit `DestroyIcon` freigegeben werden.** Bei 369
-  Symbolen je Bibliothek summiert sich das sonst.
-* **Die Galerie darf nur bei `Übernehmen` schreiben.** Die Vorauswahl markiert
-  beim Öffnen schon einen Eintrag; ohne Abfrage auf `DialogResult` hätte auch
-  ein Schliessen über das Kreuz das Symbol stillschweigend übernommen.
-* **Nicht mit `-WindowStyle Hidden` starten** - das versteckt auch das Fenster.
-  Das Skript blendet nur die Konsole aus.
-* **`Application::Run` braucht das Formular als Argument**, sonst endet die
-  Schleife sofort.
-* **`StartPosition = CenterScreen`** landete ausserhalb des sichtbaren Bereichs;
-  feste Position ist verlässlicher.
-* **Keine festen Koordinaten für Knöpfe** - damit lagen drei übereinander.
-  Ein `FlowLayoutPanel` ordnet sie selbst.
-* **`Start-Process -FilePath <Ordner>`** schlägt fehl; Ordner brauchen
-  `explorer.exe`.
-* **`SetForegroundWindow` aus einem Fremdprozess wird von Windows abgewiesen**,
-  `SendKeys` geht dann ins Leere. Für Proben `AppActivate` nehmen.
-* **Aus einer Claude-Sitzung gestartet schliesst sich das Fenster wieder**,
-  sobald der Werkzeugaufruf endet - der Prozess hängt in dessen Job. Sah aus
-  wie ein Fehler im Skript, war aber die Prozesskette. Zur Kontrolle den
-  Start in einem Aufruf machen und lange genug warten; `admin.log` hält
-  seitdem den Schliessgrund (`CloseReason`) fest.
+* **`ExtractAssociatedIcon` cannot take an index.** It always returns only the
+  first icon of a file. `shell32.dll,44` needs `ExtractIconEx`.
+* **PowerShell cannot tell apart two P/Invoke overloads with the same argument
+  count** ("Multiple ambiguous overloads found"). Solution: two distinct names,
+  both mapped onto the same Windows function via `EntryPoint` (`HolSymbol` and
+  `ZaehleSymbole`).
+* **Every icon handle must be released with `DestroyIcon`.** At 369 icons per
+  library that adds up quickly.
+* **The gallery may only write on `Übernehmen`.** The preselection already
+  highlights an entry when it opens; without checking `DialogResult`, closing
+  the window with the X would have silently applied that icon.
+* **Do not start with `-WindowStyle Hidden`** — that hides the window too. The
+  script only hides the console.
+* **`Application::Run` needs the form as its argument**, otherwise the loop
+  ends immediately.
+* **`StartPosition = CenterScreen`** ended up outside the visible area; a fixed
+  position is more reliable.
+* **No fixed coordinates for buttons** — that left three of them stacked on top
+  of each other. A `FlowLayoutPanel` arranges them by itself.
+* **`Start-Process -FilePath <folder>`** fails; folders need `explorer.exe`.
+* **`SetForegroundWindow` from a foreign process is refused by Windows**, and
+  `SendKeys` then goes nowhere. Use `AppActivate` for tests.
+* **Started from a Claude session, the window closes again** as soon as the tool
+  call ends — the process hangs in its job object. It looked like a bug in the
+  script, but it was the process chain. To check, do the start in a single call
+  and wait long enough; `admin.log` has recorded the close reason
+  (`CloseReason`) ever since.
 
-## Lizenz
+## License
 
-Donkey's Apprentice steht unter der **MIT-Lizenz** -- der volle Text liegt
-in [`LICENSE`](LICENSE) im selben Ordner.
+Donkey's Apprentice is published under the **MIT license** — the full text is
+in [`LICENSE`](LICENSE) in the same folder.
 
-Das heißt: benutzen, ändern, weitergeben und auch verkaufen ist erlaubt.
-Die einzige Bedingung ist, dass Lizenztext und Copyright-Zeile
-(`Copyright (c) 2026 Eselchen Labs`) mitgegeben werden. Eine Gewähr
-übernimmt niemand.
+That means: using, modifying, redistributing and even selling it is allowed.
+The only condition is that the license text and the copyright line
+(`Copyright (c) 2026 Eselchen Labs`) travel with it. No warranty is given.
 
-Die Lizenz ist wortgleich zu der von MarkUp -- zwei Werkzeuge desselben
-Hauses sollen nicht verschieden lizenziert sein.
+The license is word-for-word the same as MarkUp's — two tools from the same
+house should not be licensed differently.
 
-## Sicherungen
+## Backups
 
-`QuickAccessAdmin.alt.ps1` und `QuickAccessAdmin.vor_galerie.ps1` sind
-Stände von vorher, `quickaccess.alt.txt` eine ältere Liste.
+`QuickAccessAdmin.alt.ps1` and `QuickAccessAdmin.vor_galerie.ps1` are earlier
+states, `quickaccess.alt.txt` is an older list.
 
 ---
 
-**Donkey's Apprentice** — Eselchen Labs, [MIT-Lizenz](LICENSE).
+**Donkey's Apprentice** — Eselchen Labs, [MIT license](LICENSE).
 
-Stand: 13.09.2026
+Last updated: 2026-09-13
