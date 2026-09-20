@@ -99,8 +99,8 @@ function global:QA-Log($text) {
 }
 
 function global:QA-Oeffne($ziel) {
-    if (-not $ziel) { QA-Log 'Klick ohne Ziel'; return }
-    QA-Log ('öffne: ' + $ziel)
+    if (-not $ziel) { QA-Log 'click with no target'; return }
+    QA-Log ('opening: ' + $ziel)
     # 🔴 Expand %VARIABLES% BEFORE anything is checked. Without that,
     #    Test-Path fails on '%USERPROFILE%\Documents' and every entry of the
     #    shipped example list reports "not found" -- the list MUST work
@@ -113,18 +113,18 @@ function global:QA-Oeffne($ziel) {
         # Explorer, by contrast, accepts them unchanged.
         if ($ziel -like 'shell:*') {
             Start-Process explorer.exe -ArgumentList ('"' + $ziel + '"') -ErrorAction Stop
-            QA-Log '  -> Shell-Ort im Explorer'
+            QA-Log '  -> shell location in Explorer'
             return
         }
         if (QA-IstLink $ziel) {
             Start-Process $ziel -ErrorAction Stop
-            QA-Log '  -> Link gestartet'
+            QA-Log '  -> link started'
             return
         }
         if (-not (Test-Path -LiteralPath $ziel)) {
-            QA-Log '  -> NICHT GEFUNDEN'
+            QA-Log '  -> NOT FOUND'
             [System.Windows.Forms.MessageBox]::Show(
-                "Nicht gefunden:`n$ziel`n`nLiegt das Netzlaufwerk an?",
+                "Not found:`n$ziel`n`nIs the network drive connected?",
                 "Donkey's Apprentice", 'OK', 'Warning') | Out-Null
             return
         }
@@ -138,19 +138,19 @@ function global:QA-Oeffne($ziel) {
             #    required" - a directory simply is not an executable
             #    target. Explorer takes it without complaint.
             Start-Process explorer.exe -ArgumentList ('"' + $ziel + '"') -ErrorAction Stop
-            QA-Log '  -> Ordner im Explorer'
+            QA-Log '  -> folder in Explorer'
         } else {
             # ⚠️ Pass -WorkingDirectory: without it the new process
             #    inherits the tray tool's working directory, and Office
             #    silently failed to open files from paths with "&" in the
             #    name.
             Start-Process -FilePath $ziel -WorkingDirectory (Split-Path -Parent $ziel) -ErrorAction Stop
-            QA-Log '  -> gestartet'
+            QA-Log '  -> started'
         }
     } catch {
-        QA-Log ('  -> FEHLER: ' + $_.Exception.Message)
+        QA-Log ('  -> ERROR: ' + $_.Exception.Message)
         [System.Windows.Forms.MessageBox]::Show(
-            "Konnte nicht geöffnet werden:`n$ziel`n`n" + $_.Exception.Message,
+            "Could not be opened:`n$ziel`n`n" + $_.Exception.Message,
             "Donkey's Apprentice", 'OK', 'Error') | Out-Null
     }
 }
@@ -224,7 +224,7 @@ if (-not (Test-Path $global:QA.Konfig)) {
         # Copy instead of write: that preserves the encoding, and there is
         # only ONE place where the initial content lives.
         Copy-Item -LiteralPath $beispiel -Destination $global:QA.Konfig
-        QA-Log 'Erststart: quickaccess.txt aus quickaccess.beispiel.txt angelegt'
+        QA-Log 'First run: quickaccess.txt created from quickaccess.beispiel.txt'
         # DA-20260913-144047595-f616: the same condition as above, no
         # second flag -- there was no quickaccess.txt, so this is the very
         # first start.
@@ -244,7 +244,7 @@ Downloads = %USERPROFILE%\Downloads
         #    characters in paths come back wrong when read again.
         [IO.File]::WriteAllText($global:QA.Konfig, $notfall,
                                 (New-Object Text.UTF8Encoding $true))
-        QA-Log 'Erststart: quickaccess.beispiel.txt fehlt - Notfallliste angelegt'
+        QA-Log 'First run: quickaccess.beispiel.txt missing - emergency list created'
         $global:QA.Erstmals = $true
     }
 }
@@ -279,7 +279,7 @@ function global:QA-BrowserSymbol {
             if ($b.Pfad -and (Test-Path -LiteralPath $b.Pfad)) {
                 $ergebnis = [System.Drawing.Icon]::ExtractAssociatedIcon($b.Pfad)
                 if ($ergebnis) {
-                    QA-Log ('Browsersymbol vom laufenden ' + $b.Name)
+                    QA-Log ('browser icon from the running ' + $b.Name)
                     break
                 }
             }
@@ -512,7 +512,7 @@ function global:QA-Favicon($ziel) {
 
         if ($verfallen) {
             Remove-Item -LiteralPath $nichts -Force -ErrorAction SilentlyContinue
-            QA-Log ('Symbolvermerk verfallen (Liste neuer): ' + $name)
+            QA-Log ('icon note expired (list is newer): ' + $name)
         } else {
             $wieoft = 0
             try {
@@ -595,7 +595,7 @@ function global:QA-Favicon($ziel) {
             if ($symbol) {
                 [IO.File]::WriteAllBytes($bild, $daten)
                 if (Test-Path -LiteralPath $nichts) { Remove-Item -LiteralPath $nichts -Force }
-                QA-Log ('Seitensymbol geholt: ' + $adresse.Host)
+                QA-Log ('site icon fetched: ' + $adresse.Host)
                 return $symbol
             }
         } catch { }
@@ -816,9 +816,9 @@ function global:QA-BaueZeile($e) {
     if (-not $sym) { $sym = QA-Symbol $e.Ziel }
     if ($sym) {
         try { $bild.Image = $sym.ToBitmap() }
-        catch { QA-Log ('Symbol nicht darstellbar (' + $e.Name + '): ' + $_.Exception.Message) }
+        catch { QA-Log ('icon cannot be shown (' + $e.Name + '): ' + $_.Exception.Message) }
     } else {
-        QA-Log ('kein Symbol für ' + $e.Name + ' -> ' + $e.Ziel)
+        QA-Log ('no icon for ' + $e.Name + ' -> ' + $e.Ziel)
     }
     $bild.Tag = $e.Ziel
     $bild.Cursor = [System.Windows.Forms.Cursors]::Hand
@@ -891,10 +891,10 @@ function global:QA-Version {
     }
     $ps1 = Join-Path $global:QA.Basis 'QuickAccess.ps1'
     if (Test-Path -LiteralPath $ps1) {
-        return 'unveröffentlicht (' +
+        return 'unreleased (' +
                (Get-Item -LiteralPath $ps1).LastWriteTime.ToString('yyyy-MM-dd') + ')'
     }
-    return 'unbekannt'
+    return 'unknown'
 }
 
 function global:QA-ZeigeUeber {
@@ -915,9 +915,9 @@ github.com/eselchenlabs/donkeys-apprentice
 
 Der volle Lizenztext liegt als LICENSE im Programmordner.
 "@
-    QA-Log 'Über-Fenster geöffnet'
+    QA-Log 'About window opened'
     [System.Windows.Forms.MessageBox]::Show(
-        $text, "Über Donkey's Apprentice", 'OK', 'Information') | Out-Null
+        $text, "About Donkey's Apprentice", 'OK', 'Information') | Out-Null
 }
 
 # DA-20260917-174940488-ae95: the overlay closes as soon as the mouse
@@ -931,10 +931,10 @@ function global:QA-ZeichneAnheften {
     $pin = $global:QA.PinKnopf
     if (-not $pin) { return }
     if ($global:QA.Angeheftet) {
-        $pin.Text = 'Angeheftet'
+        $pin.Text = 'Pinned'
         $pin.ForeColor = $global:FARBE_TEXT
     } else {
-        $pin.Text = 'Anheften'
+        $pin.Text = 'Pin'
         $pin.ForeColor = $global:FARBE_GRUPPE
     }
 }
@@ -966,7 +966,7 @@ function global:QA-BaueFuss {
     QA-ZeichneAnheften
 
     foreach ($paar in @(
-        @('Verwalten', {
+        @('Manage', {
             # The management window as its own process (otherwise the
             # modal window blocks the tray icon's message loop). Not with
             # -WindowStyle Hidden - the wscript launcher only hides the
@@ -980,8 +980,8 @@ function global:QA-BaueFuss {
         # ANY TIME. A balloon tip disappears again, a menu item does not.
         # No version number -- DA has none today, and introducing one is a
         # separate matter.
-        @('Über',     { QA-ZeigeUeber }),
-        @('Beenden',   { $global:QA.Tray.Visible = $false
+        @('About',     { QA-ZeigeUeber }),
+        @('Quit',   { $global:QA.Tray.Visible = $false
                          [System.Windows.Forms.Application]::Exit() }))) {
         $knopf = New-Object System.Windows.Forms.Label
         $knopf.Text = $paar[0]
@@ -1002,7 +1002,7 @@ function global:QA-BaueOverlay {
     # Order entries by group; the file's own order is preserved.
     $nach = New-Object System.Collections.Specialized.OrderedDictionary
     foreach ($e in (QA-LiesKonfig)) {
-        $g = if ($e.Gruppe) { $e.Gruppe } else { 'Ohne Gruppe' }
+        $g = if ($e.Gruppe) { $e.Gruppe } else { 'Ungrouped' }
         if (-not $nach.Contains($g)) { $nach[$g] = New-Object System.Collections.ArrayList }
         [void]$nach[$g].Add($e)
     }
@@ -1123,7 +1123,7 @@ if (Test-Path $eigenes) {
     $tray.Icon = if ($excel) { [System.Drawing.Icon]::ExtractAssociatedIcon($excel) }
                  else { [System.Drawing.SystemIcons]::Application }
 }
-$tray.Text = "Donkey's Apprentice - Maus drüber genügt"
+$tray.Text = "Donkey's Apprentice - just hover"
 $tray.Visible = $true
 $global:QA.Tray = $tray
 
@@ -1171,7 +1171,7 @@ $wache.Start()
 # Build once at startup (without showing it) - then the log already says
 # whether the icons arrive, without anyone having had to open the
 # overlay.
-QA-Log '--- Aufbau beim Start ---'
+QA-Log '--- build at startup ---'
 try {
     QA-BaueOverlay
     $mitBild = 0; $ohneBild = 0
@@ -1184,9 +1184,9 @@ try {
             }
         }
     }
-    QA-Log ("Zeilen mit Symbol: $mitBild, ohne: $ohneBild")
+    QA-Log ("rows with icon: $mitBild, without: $ohneBild")
 } catch {
-    QA-Log ('Aufbau fehlgeschlagen: ' + $_.Exception.Message)
+    QA-Log ('build failed: ' + $_.Exception.Message)
 }
 
 # DA-20260913-144047595-f616: on the VERY FIRST start the balloon says
@@ -1197,12 +1197,12 @@ try {
 # many, and the second hides the first.
 if ($global:QA.Erstmals) {
     $tray.ShowBalloonTip(7000, "Donkey's Apprentice",
-        'Rechtsklick auf das Eselsymbol -> "Verwalten".' + [char]10 +
-        'Dort stehen die Einträge, die Beispiele und der Autostart.', 'Info')
-    QA-Log 'Erststart: Hinweisblase gezeigt'
+        'Right-click the donkey icon -> "Manage".' + [char]10 +
+        'That is where the entries, the examples and the autostart live.', 'Info')
+    QA-Log 'first run: balloon tip shown'
 } else {
     $tray.ShowBalloonTip(2500, "Donkey's Apprentice",
-        'Maus über das Symbol - der Rest geht von allein.', 'Info')
+        'Hover over the icon - the rest happens by itself.', 'Info')
 }
 
 [System.Windows.Forms.Application]::Run()

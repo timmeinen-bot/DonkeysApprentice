@@ -15,7 +15,7 @@
 #  ⚠️ Every handle must be released with DestroyIcon. At 300 icons per
 #     library that otherwise adds up to a real leak.
 # =====================================================================
-param([string]$Vorgabe = '')   # bereits eingestelltes Symbol als "quelle,index"
+param([string]$Vorgabe = '')   # bereits eingestelltes Symbol als "source,index"
 $ErrorActionPreference = 'Stop'
 
 function Spur($text) {
@@ -26,7 +26,7 @@ function Spur($text) {
             (Get-Date).ToString('HH:mm:ss.fff') + '  ' + $text)
     } catch { }
 }
-Spur ('Start, Vorgabe=[' + $Vorgabe + ']')
+Spur ('start, default=[' + $Vorgabe + ']')
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -43,17 +43,17 @@ public static extern bool DestroyIcon(IntPtr handle);
 $SYS = Join-Path $env:SystemRoot 'System32'
 # The libraries that hold the well-known Windows icons.
 $QUELLEN = [ordered]@{
-    'Allgemein (shell32)'      = Join-Path $SYS 'shell32.dll'
+    'General (shell32)'      = Join-Path $SYS 'shell32.dll'
     'Modern (imageres)'        = Join-Path $SYS 'imageres.dll'
-    'Geräte und Ordner (ddores)' = Join-Path $SYS 'ddores.dll'
-    'Systemsteuerung'          = Join-Path $SYS 'setupapi.dll'
-    'Netzwerk'                 = Join-Path $SYS 'netshell.dll'
+    'Devices and folders (ddores)' = Join-Path $SYS 'ddores.dll'
+    'Control Panel'          = Join-Path $SYS 'setupapi.dll'
+    'Network'                 = Join-Path $SYS 'netshell.dll'
     'Explorer'                 = Join-Path $env:SystemRoot 'explorer.exe'
 }
 
 . "$PSScriptRoot\QA-Stil.ps1"   # DA-20260913-163439041-83d7: eine Stilquelle
 $f = New-Object System.Windows.Forms.Form
-$f.Text = 'Symbol auswählen'
+$f.Text = 'Choose an icon'
 $f.Size = New-Object System.Drawing.Size(880, 640)
 $f.StartPosition = 'Manual'
 $f.Location = New-Object System.Drawing.Point(220, 120)
@@ -67,7 +67,7 @@ $oben.Height = 46
 $f.Controls.Add($oben)
 
 $l = New-Object System.Windows.Forms.Label
-$l.Text = 'Sammlung'
+$l.Text = 'Collection'
 $l.Location = New-Object System.Drawing.Point(12, 15)
 $l.Size = New-Object System.Drawing.Size(70, 20)
 $oben.Controls.Add($l)
@@ -82,13 +82,13 @@ foreach ($name in $QUELLEN.Keys) {
 $oben.Controls.Add($auswahlQuelle)
 
 $eigeneDatei = New-Object System.Windows.Forms.Button
-$eigeneDatei.Text = 'Andere Datei ...'
+$eigeneDatei.Text = 'Other file ...'
 $eigeneDatei.Location = New-Object System.Drawing.Point(356, 11)
 $eigeneDatei.Size = New-Object System.Drawing.Size(130, 26)
 $oben.Controls.Add($eigeneDatei)
 
 $hinweis = New-Object System.Windows.Forms.Label
-$hinweis.Text = 'Doppelklick übernimmt das Symbol'
+$hinweis.Text = 'Double-click applies the icon'
 $hinweis.Location = New-Object System.Drawing.Point(500, 15)
 $hinweis.Size = New-Object System.Drawing.Size(280, 20)
 $hinweis.ForeColor = [System.Drawing.Color]::DimGray
@@ -100,20 +100,20 @@ $unten.Height = 52
 $f.Controls.Add($unten)
 
 $gewaehlt = New-Object System.Windows.Forms.Label
-$gewaehlt.Text = 'nichts gewählt'
+$gewaehlt.Text = 'nothing chosen'
 $gewaehlt.Location = New-Object System.Drawing.Point(12, 16)
 $gewaehlt.Size = New-Object System.Drawing.Size(560, 20)
 $unten.Controls.Add($gewaehlt)
 
 $knopfOk = New-Object System.Windows.Forms.Button
-$knopfOk.Text = 'Übernehmen'
+$knopfOk.Text = 'Apply'
 $knopfOk.Size = New-Object System.Drawing.Size(120, 30)
 $knopfOk.Anchor = 'Right,Top'
 $knopfOk.Enabled = $false
 $unten.Controls.Add($knopfOk)
 
 $knopfAbbruch = New-Object System.Windows.Forms.Button
-$knopfAbbruch.Text = 'Abbrechen'
+$knopfAbbruch.Text = 'Cancel'
 $knopfAbbruch.Size = New-Object System.Drawing.Size(100, 30)
 $knopfAbbruch.Anchor = 'Right,Top'
 $unten.Controls.Add($knopfAbbruch)
@@ -173,8 +173,8 @@ function Lade-Galerie($pfad) {
     $galerie.EndUpdate()
     $f.Cursor = [System.Windows.Forms.Cursors]::Default
     $script:aktuelleQuelle = $pfad
-    $hinweis.Text = "$($galerie.Items.Count) Symbole - Doppelklick übernimmt"
-    Spur ('geladen: ' + $galerie.Items.Count + ' Symbole aus ' + (Split-Path $pfad -Leaf))
+    $hinweis.Text = "$($galerie.Items.Count) icons - double-click to apply"
+    Spur ('loaded: ' + $galerie.Items.Count + ' icons from ' + (Split-Path $pfad -Leaf))
 }
 
 $auswahlQuelle.Add_SelectedIndexChanged({
@@ -184,19 +184,19 @@ $auswahlQuelle.Add_SelectedIndexChanged({
 
 $eigeneDatei.Add_Click({
     $d = New-Object System.Windows.Forms.OpenFileDialog
-    $d.Title = 'Aus welcher Datei sollen die Symbole kommen?'
-    $d.Filter = 'Symbolquellen (*.dll;*.exe;*.ico)|*.dll;*.exe;*.ico|Alle Dateien (*.*)|*.*'
+    $d.Title = 'Which file should the icons come from?'
+    $d.Filter = 'Icon sources (*.dll;*.exe;*.ico)|*.dll;*.exe;*.ico|All files (*.*)|*.*'
     $d.InitialDirectory = $SYS
     if ($d.ShowDialog() -eq 'OK') { Lade-Galerie $d.FileName }
 })
 
 function Merke-Auswahl {
-    if ($galerie.SelectedItems.Count -eq 0) { Spur 'Merke-Auswahl: nichts markiert'; return }
+    if ($galerie.SelectedItems.Count -eq 0) { Spur 'remember selection: nothing marked'; return }
     $index = $galerie.SelectedItems[0].Tag
     $script:ergebnis = $script:aktuelleQuelle + ',' + $index
-    $gewaehlt.Text = 'Gewählt: ' + [IO.Path]::GetFileName($script:aktuelleQuelle) + ', Nummer ' + $index
+    $gewaehlt.Text = 'chosen: ' + [IO.Path]::GetFileName($script:aktuelleQuelle) + ', number ' + $index
     $knopfOk.Enabled = $true
-    Spur ('gemerkt: ' + $script:ergebnis)
+    Spur ('remembered: ' + $script:ergebnis)
 }
 $galerie.Add_SelectedIndexChanged({ Merke-Auswahl })
 $galerie.Add_DoubleClick({
@@ -258,14 +258,14 @@ $f.Add_Shown({
     # launched it. Bring it to the front briefly, then release it again.
     $f.TopMost = $true
     $f.TopMost = $false
-    $hinweis.Text = 'lade Symbole ...'
+    $hinweis.Text = 'loading icons ...'
     $f.Refresh()
-    try { Erstauswahl; Spur 'Erstauswahl fertig' }
-    catch { Spur ('Erstauswahl gescheitert: ' + $_.Exception.Message) }
-    Spur ('Zustand: Einträge=' + $galerie.Items.Count +
-          ' markiert=' + $galerie.SelectedItems.Count +
-          ' Übernehmen-aktiv=' + $knopfOk.Enabled +
-          ' Ergebnis=[' + $script:ergebnis + ']')
+    try { Erstauswahl; Spur 'initial selection done' }
+    catch { Spur ('initial selection failed: ' + $_.Exception.Message) }
+    Spur ('state: entries=' + $galerie.Items.Count +
+          ' marked=' + $galerie.SelectedItems.Count +
+          ' apply-active=' + $knopfOk.Enabled +
+          ' result=[' + $script:ergebnis + ']')
 })
 # DA-20260913-163439041-83d7: colour first, then show.
 QA-Dunkel $f
@@ -279,7 +279,7 @@ QA-Dunkel $f
 #    DialogResult, closing the window with the X would have silently applied
 #    that icon.
 $ablage = Join-Path $PSScriptRoot 'symbolauswahl.txt'
-Spur ('Ende: DialogResult=' + $f.DialogResult + ' Ergebnis=[' + $script:ergebnis + ']')
+Spur ('end: DialogResult=' + $f.DialogResult + ' result=[' + $script:ergebnis + ']')
 if ($f.DialogResult -eq [System.Windows.Forms.DialogResult]::OK -and $script:ergebnis) {
     [IO.File]::WriteAllText($ablage, $script:ergebnis, (New-Object Text.UTF8Encoding $false))
 } elseif (Test-Path $ablage) {

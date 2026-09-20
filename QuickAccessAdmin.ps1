@@ -117,10 +117,10 @@ function Lies-Eintraege {
 
 function Schreib-Eintraege($liste) {
     $text = New-Object System.Text.StringBuilder
-    [void]$text.AppendLine('# ' + $script:TITEL + ' - Name = Ziel')
-    [void]$text.AppendLine('#   [Gruppe] macht eine Überschrift')
-    [void]$text.AppendLine('#   Ziel darf Datei, Ordner oder Link sein')
-    [void]$text.AppendLine('#   Eigenes Symbol dahinter:  ... | quelle.dll,5')
+    [void]$text.AppendLine('# ' + $script:TITEL + ' - name = target')
+    [void]$text.AppendLine('#   [Group] makes a heading')
+    [void]$text.AppendLine('#   the target may be a file, a folder or a link')
+    [void]$text.AppendLine('#   own icon after it:        ... | source.dll,5')
     $letzte = $null
     foreach ($e in $liste) {
         if ($e.Gruppe -ne $letzte) {
@@ -140,24 +140,24 @@ function Schreib-Eintraege($liste) {
 #  Validation of one line. Returns: a message or $null.
 # ---------------------------------------------------------------------
 function Pruefe($name, $ziel, $liste, $ausser = -1) {
-    if (-not $name -or -not $name.Trim()) { return 'Der Name darf nicht leer sein.' }
-    if (-not $ziel -or -not $ziel.Trim()) { return 'Das Ziel darf nicht leer sein.' }
-    if ($name -match '^\s*\[') { return 'Der Name darf nicht mit einer eckigen Klammer beginnen - die kennzeichnet Gruppen.' }
-    if ($name.Contains('=')) { return 'Der Name darf kein Gleichheitszeichen enthalten - daran wird die Zeile getrennt.' }
-    if ($name.Contains('|')) { return 'Der Name darf keinen senkrechten Strich enthalten - der trennt das Symbol ab.' }
+    if (-not $name -or -not $name.Trim()) { return 'The name must not be empty.' }
+    if (-not $ziel -or -not $ziel.Trim()) { return 'The target must not be empty.' }
+    if ($name -match '^\s*\[') { return 'The name must not start with a square bracket - that marks a group.' }
+    if ($name.Contains('=')) { return 'The name must not contain an equals sign - the line is split on it.' }
+    if ($name.Contains('|')) { return 'The name must not contain a vertical bar - that separates the icon.' }
     if (Ist-Link $ziel) {
         if ($ziel -notmatch '^(https?://[^\s/]+|mailto:[^\s@]+@[^\s@]+|ftp://[^\s/]+)') {
-            return 'Die Adresse sieht unvollständig aus, erwartet wird etwa http://rechner:port'
+            return 'The address looks incomplete; something like http://host:port is expected'
         }
     } else {
-        if ($ziel -match '[<>|?*]') { return 'Der Pfad enthält Zeichen, die Windows nicht erlaubt.' }
+        if ($ziel -match '[<>|?*]') { return 'The path contains characters Windows does not allow.' }
         if (-not (Test-Path -LiteralPath $ziel)) {
-            return 'HINWEIS: Das Ziel ist gerade nicht erreichbar. Bei Netzlaufwerken ist das in Ordnung.'
+            return 'NOTE: the target is not reachable right now. For network drives that is fine.'
         }
     }
     for ($i = 0; $i -lt $liste.Count; $i++) {
         if ($i -eq $ausser) { continue }
-        if ($liste[$i].Name -eq $name.Trim()) { return 'Ein Eintrag mit diesem Namen besteht bereits.' }
+        if ($liste[$i].Name -eq $name.Trim()) { return 'An entry with this name already exists.' }
     }
     return $null
 }
@@ -168,14 +168,14 @@ function Pruefe($name, $ziel, $liste, $ausser = -1) {
 #    ArrayList here, otherwise adding, deleting and the group buttons
 #    are unreliable.
 $eintraege = [System.Collections.ArrayList]@(Lies-Eintraege)
-Spur ('Einträge: ' + $eintraege.Count)
+Spur ('entries: ' + $eintraege.Count)
 
 # ---------------------------------------------------------------------
 #  Fenster
 # ---------------------------------------------------------------------
 . "$PSScriptRoot\QA-Stil.ps1"   # DA-20260913-163439041-83d7: eine Stilquelle
 $f = New-Object System.Windows.Forms.Form
-$f.Text = $script:TITEL + ' - Verwaltung'
+$f.Text = $script:TITEL + ' - management'
 $f.Size = New-Object System.Drawing.Size(1020, 680)
 $f.MinimumSize = New-Object System.Drawing.Size(880, 600)
 $f.StartPosition = 'Manual'
@@ -193,10 +193,10 @@ $liste.AllowDrop = $true
 $liste.Location = New-Object System.Drawing.Point(12, 12)
 $liste.Size = New-Object System.Drawing.Size(980, 350)
 $liste.Anchor = 'Top,Left,Right,Bottom'
-[void]$liste.Columns.Add('Gruppe', 120)
+[void]$liste.Columns.Add('Group', 120)
 [void]$liste.Columns.Add('Name', 205)
-[void]$liste.Columns.Add('Ziel', 395)
-[void]$liste.Columns.Add('Zustand', 70)
+[void]$liste.Columns.Add('Target', 395)
+[void]$liste.Columns.Add('state', 70)
 [void]$liste.Columns.Add('Symbol', 165)
 $f.Controls.Add($liste)
 
@@ -221,10 +221,10 @@ function QA-SymbolZustand($ziel) {
             $r = (Get-Content -LiteralPath $nichts -Raw -ErrorAction Stop)
             if ($r) { $wieoft = [int]($r.Trim()) }
         } catch { }
-        return ('keins seit ' + $v.LastWriteTime.ToString('dd.MM. HH:mm') +
+        return ('none since ' + $v.LastWriteTime.ToString('dd.MM. HH:mm') +
                 $(if ($wieoft -gt 1) { ' (' + $wieoft + 'x)' } else { '' }))
     }
-    return 'noch nicht geholt'
+    return 'not fetched yet'
 }
 
 function Fuelle-Liste($auswahl = -1) {
@@ -236,9 +236,9 @@ function Fuelle-Liste($auswahl = -1) {
         [void]$zeile.SubItems.Add($e.Ziel)
         if (Ist-Link $e.Ziel) { [void]$zeile.SubItems.Add('Link') }
         elseif (Test-Path -LiteralPath $e.Ziel) {
-            [void]$zeile.SubItems.Add($(if ((Get-Item -LiteralPath $e.Ziel).PSIsContainer) { 'Ordner' } else { 'Datei' }))
+            [void]$zeile.SubItems.Add($(if ((Get-Item -LiteralPath $e.Ziel).PSIsContainer) { 'Folder' } else { 'File' }))
         } else {
-            [void]$zeile.SubItems.Add('fehlt')
+            [void]$zeile.SubItems.Add('missing')
             $zeile.ForeColor = $FARBE_WARNUNG
         }
         # DA-20260914-093332250-030d: if a custom icon is set, it wins.
@@ -249,9 +249,9 @@ function Fuelle-Liste($auswahl = -1) {
             [void]$zeile.SubItems.Add([IO.Path]::GetFileName(($e.Symbol -split ',')[0]))
         } else {
             $zustand = QA-SymbolZustand $e.Ziel
-            if (-not $zustand) { $zustand = '(Standard)' }
+            if (-not $zustand) { $zustand = '(default)' }
             [void]$zeile.SubItems.Add($zustand)
-            if ($zustand -like 'keins seit*') { $zeile.ForeColor = $FARBE_WARNUNG }
+            if ($zustand -like 'none since*') { $zeile.ForeColor = $FARBE_WARNUNG }
         }
         [void]$liste.Items.Add($zeile)
     }
@@ -271,9 +271,9 @@ function Beschriftung($text, $x, $y, $breite) {
     $l.Anchor = 'Left,Bottom'
     $f.Controls.Add($l)
 }
-Beschriftung 'Gruppe' 12 374 120
+Beschriftung 'Group' 12 374 120
 Beschriftung 'Name' 140 374 210
-Beschriftung 'Ziel (Datei, Ordner oder Link)' 356 374 380
+Beschriftung 'Target (file, folder or link)' 356 374 380
 
 $fGruppe = New-Object System.Windows.Forms.ComboBox
 $fGruppe.Location = New-Object System.Drawing.Point(12, 394)
@@ -294,14 +294,14 @@ $fZiel.Anchor = 'Left,Right,Bottom'
 $f.Controls.Add($fZiel)
 
 $knopfDatei = New-Object System.Windows.Forms.Button
-$knopfDatei.Text = 'Datei ...'
+$knopfDatei.Text = 'File ...'
 $knopfDatei.Location = New-Object System.Drawing.Point(812, 393)
 $knopfDatei.Size = New-Object System.Drawing.Size(86, 26)
 $knopfDatei.Anchor = 'Right,Bottom'
 $f.Controls.Add($knopfDatei)
 
 $knopfOrdner = New-Object System.Windows.Forms.Button
-$knopfOrdner.Text = 'Ordner ...'
+$knopfOrdner.Text = 'Folder ...'
 $knopfOrdner.Location = New-Object System.Drawing.Point(904, 393)
 $knopfOrdner.Size = New-Object System.Drawing.Size(88, 26)
 $knopfOrdner.Anchor = 'Right,Bottom'
@@ -309,7 +309,7 @@ $f.Controls.Add($knopfOrdner)
 
 # ─── Icon area ────────────────────────────────────────────────────────
 $symbolFeld = New-Object System.Windows.Forms.GroupBox
-$symbolFeld.Text = 'Symbol dieses Eintrags'
+$symbolFeld.Text = 'Icon for this entry'
 $symbolFeld.Location = New-Object System.Drawing.Point(12, 430)
 $symbolFeld.Size = New-Object System.Drawing.Size(330, 66)
 $symbolFeld.Anchor = 'Left,Bottom'
@@ -324,7 +324,7 @@ $vorschau.BackColor = [System.Drawing.Color]::White
 $symbolFeld.Controls.Add($vorschau)
 
 $symbolText = New-Object System.Windows.Forms.Label
-$symbolText.Text = '(Standard des Dokuments)'
+$symbolText.Text = '(the document default)'
 $symbolText.Location = New-Object System.Drawing.Point(56, 32)
 $symbolText.Size = New-Object System.Drawing.Size(262, 18)
 $symbolText.ForeColor = [System.Drawing.Color]::DimGray
@@ -366,7 +366,7 @@ function Zeige-Vorschau($ziel, $symbol) {
                 }
             }
         }
-    } catch { Spur ('Vorschau: ' + $_.Exception.Message) }
+    } catch { Spur ('preview: ' + $_.Exception.Message) }
     # 🔴 THIS NEEDS A try AS WELL. GetFileName throws on invalid
     #    characters in a path, and an exception from an event handler ends
     #    the entire message loop under ErrorActionPreference=Stop - the
@@ -380,8 +380,8 @@ function Zeige-Vorschau($ziel, $symbol) {
             try { $t = [IO.Path]::GetFileName($roh) } catch { }
             if ($teile.Count -gt 1) { $t = $t + ', Nummer ' + $teile[1].Trim() }
             $symbolText.Text = $t
-        } else { $symbolText.Text = '(Standard des Dokuments)' }
-    } catch { Spur ('Vorschau anzeigen: ' + $_.Exception.Message) }
+        } else { $symbolText.Text = '(the document default)' }
+    } catch { Spur ('show preview: ' + $_.Exception.Message) }
 }
 
 $meldung = New-Object System.Windows.Forms.Label
@@ -415,19 +415,19 @@ function Pruefe-Eingabe {
     $fehler = Pruefe $fName.Text $fZiel.Text $eintraege $script:aktuellerIndex
     if ($fehler) {
         $meldung.Text = $fehler
-        $meldung.ForeColor = if ($fehler.StartsWith('HINWEIS')) {
+        $meldung.ForeColor = if ($fehler.StartsWith('NOTE')) {
             [System.Drawing.Color]::DarkGoldenrod } else { $FARBE_WARNUNG }
         # A hint does not block - a network drive is allowed to be away.
-        return $fehler.StartsWith('HINWEIS')
+        return $fehler.StartsWith('NOTE')
     }
     $meldung.Text = ''
     return $true
 }
 
-Leistenknopf 'Hinzufügen' 105 {
-    Spur ('Hinzufügen gedrückt: Name=[' + $fName.Text + '] Ziel=[' + $fZiel.Text +
-          '] Symbol=[' + $script:aktuellesSymbol + ']')
-    if (-not (Pruefe-Eingabe)) { Spur ('  abgelehnt: ' + $meldung.Text); return }
+Leistenknopf 'Add' 105 {
+    Spur ('Add pressed: name=[' + $fName.Text + '] target=[' + $fZiel.Text +
+          '] icon=[' + $script:aktuellesSymbol + ']')
+    if (-not (Pruefe-Eingabe)) { Spur ('  rejected: ' + $meldung.Text); return }
     [void]$eintraege.Add([PSCustomObject]@{
         Gruppe = $fGruppe.Text.Trim(); Name = $fName.Text.Trim()
         Ziel = $fZiel.Text.Trim(); Symbol = $script:aktuellesSymbol })
@@ -438,9 +438,9 @@ Leistenknopf 'Hinzufügen' 105 {
     Zeige-Vorschau '' ''
 }
 
-Leistenknopf 'Übernehmen' 105 {
-    Spur ('Übernehmen gedrückt: Index=' + $script:aktuellerIndex +
-          ' Name=[' + $fName.Text + '] Symbol=[' + $script:aktuellesSymbol + ']')
+Leistenknopf 'Apply' 105 {
+    Spur ('Apply pressed: index=' + $script:aktuellerIndex +
+          ' Name=[' + $fName.Text + '] icon=[' + $script:aktuellesSymbol + ']')
     # 🔴 Tim, 09-07: "DA cannot save a new entry, all fields filled in,
     #    still says 'select an entry in the list first'".
     #    Someone who fills in the fields and presses Apply wants to save -
@@ -448,18 +448,18 @@ Leistenknopf 'Übernehmen' 105 {
     #    With no selection a new entry is now created, instead of showing
     #    a message that helps nobody.
     if ($script:aktuellerIndex -lt 0) {
-        if (-not (Pruefe-Eingabe)) { Spur ('  abgelehnt: ' + $meldung.Text); return }
+        if (-not (Pruefe-Eingabe)) { Spur ('  rejected: ' + $meldung.Text); return }
         [void]$eintraege.Add([PSCustomObject]@{
             Gruppe = $fGruppe.Text.Trim(); Name = $fName.Text.Trim()
             Ziel = $fZiel.Text.Trim(); Symbol = $script:aktuellesSymbol })
         Aktualisiere-Gruppen
         Fuelle-Liste ($eintraege.Count - 1)
         $meldung.ForeColor = [System.Drawing.Color]::DarkGreen
-        $meldung.Text = 'Neuer Eintrag angelegt.'
-        Spur '  ohne Auswahl -> neuer Eintrag angelegt'
+        $meldung.Text = 'New entry created.'
+        Spur '  nothing selected -> new entry created'
         return
     }
-    if (-not (Pruefe-Eingabe)) { Spur ('  abgelehnt: ' + $meldung.Text); return }
+    if (-not (Pruefe-Eingabe)) { Spur ('  rejected: ' + $meldung.Text); return }
     $i = $script:aktuellerIndex
     $eintraege[$i].Gruppe = $fGruppe.Text.Trim()
     $eintraege[$i].Name = $fName.Text.Trim()
@@ -469,10 +469,10 @@ Leistenknopf 'Übernehmen' 105 {
     Fuelle-Liste $i
 }
 
-Leistenknopf 'Löschen' 88 {
-    if ($script:aktuellerIndex -lt 0) { $meldung.Text = 'Erst einen Eintrag wählen.'; return }
+Leistenknopf 'Delete' 88 {
+    if ($script:aktuellerIndex -lt 0) { $meldung.Text = 'Select an entry first.'; return }
     $e = $eintraege[$script:aktuellerIndex]
-    $frage = 'Soll der Eintrag ' + [char]8222 + $e.Name + [char]8220 + ' entfernt werden?'
+    $frage = 'Remove the entry ' + [char]8222 + $e.Name + [char]8220 + '?'
     if ([System.Windows.Forms.MessageBox]::Show($frage, $script:TITEL, 'YesNo', 'Question') -eq 'Yes') {
         $i = $script:aktuellerIndex
         $eintraege.RemoveAt($i)
@@ -495,7 +495,7 @@ function Aktuelle-Gruppe {
 }
 function Keine-Gruppe {
     $meldung.ForeColor = $FARBE_WARNUNG
-    $meldung.Text = 'Erst eine Gruppe wählen (Eintrag anklicken oder Gruppe ins Feld schreiben).'
+    $meldung.Text = 'Select a group first (click an entry, or type a group into the field).'
 }
 function Verschiebe-Gruppe($richtung) {
     $g = Aktuelle-Gruppe
@@ -510,26 +510,26 @@ function Verschiebe-Gruppe($richtung) {
     $script:aktuellerIndex = -1
     Fuelle-Liste; Aktualisiere-Gruppen
     $meldung.ForeColor = [System.Drawing.Color]::DarkGreen
-    $meldung.Text = 'Gruppe ' + [char]8222 + $g + [char]8220 + ' verschoben. Mit Speichern sichern.'
+    $meldung.Text = 'Group ' + [char]8222 + $g + [char]8220 + ' moved. Use Save to keep it.'
 }
 
-Leistenknopf 'Gruppe umbenennen' 150 {
+Leistenknopf 'Rename group' 150 {
     $g = Aktuelle-Gruppe
     if (-not $g) { Keine-Gruppe; return }
     $neu = ([Microsoft.VisualBasic.Interaction]::InputBox(
-        'Gruppe ' + [char]8222 + $g + [char]8220 + ' umbenennen in:', $script:TITEL, $g)).Trim()
+        'Group ' + [char]8222 + $g + [char]8220 + ' rename to:', $script:TITEL, $g)).Trim()
     if (-not $neu -or $neu -eq $g) { return }
     $anz = 0; foreach ($e in $eintraege) { if ($e.Gruppe -eq $g) { $e.Gruppe = $neu; $anz++ } }
     Aktualisiere-Gruppen; $fGruppe.Text = $neu; Fuelle-Liste $script:aktuellerIndex
     $meldung.ForeColor = [System.Drawing.Color]::DarkGreen
-    $meldung.Text = ('' + $anz + ' Eintrag/Einträge auf ') + [char]8222 + $neu + [char]8220 + ' umbenannt. Mit Speichern sichern.'
+    $meldung.Text = ('' + $anz + ' entry/entries to ') + [char]8222 + $neu + [char]8220 + ' renamed. Use Save to keep it.'
 }
 
-Leistenknopf 'Gruppe löschen' 130 {
+Leistenknopf 'Delete group' 130 {
     $g = Aktuelle-Gruppe
     if (-not $g) { Keine-Gruppe; return }
     $betroffen = @($eintraege | Where-Object { $_.Gruppe -eq $g })
-    $frage = 'Gruppe ' + [char]8222 + $g + [char]8220 + ' mit ' + $betroffen.Count + ' Eintrag/Einträgen löschen?'
+    $frage = 'Group ' + [char]8222 + $g + [char]8220 + ' mit ' + $betroffen.Count + ' entry/entries?'
     if ([System.Windows.Forms.MessageBox]::Show($frage, $script:TITEL, 'YesNo', 'Warning') -eq 'Yes') {
         for ($i = $eintraege.Count - 1; $i -ge 0; $i--) {
             if ($eintraege[$i].Gruppe -eq $g) { $eintraege.RemoveAt($i) }
@@ -537,21 +537,21 @@ Leistenknopf 'Gruppe löschen' 130 {
         $script:aktuellerIndex = -1
         Aktualisiere-Gruppen; Fuelle-Liste; $fName.Clear(); $fZiel.Clear()
         $meldung.ForeColor = [System.Drawing.Color]::DarkGreen
-        $meldung.Text = 'Gruppe ' + [char]8222 + $g + [char]8220 + ' gelöscht. Mit Speichern sichern.'
+        $meldung.Text = 'Group ' + [char]8222 + $g + [char]8220 + ' deleted. Use Save to keep it.'
     }
 }
 
-Leistenknopf 'Gruppe ▲' 92 { Verschiebe-Gruppe -1 }
-Leistenknopf 'Gruppe ▼' 92 { Verschiebe-Gruppe 1 }
+Leistenknopf 'Group ▲' 92 { Verschiebe-Gruppe -1 }
+Leistenknopf 'Group ▼' 92 { Verschiebe-Gruppe 1 }
 
-Leistenknopf 'Symbol wählen ...' 140 {
+Leistenknopf 'Choose icon ...' 140 {
     # The gallery runs as its own process and returns its result through
     # a small file - it cannot share a variable.
     $galerieSkript = Join-Path $BASIS 'Symbolauswahl.ps1'
     $ablage = Join-Path $BASIS 'symbolauswahl.txt'
     if (-not (Test-Path $galerieSkript)) {
         $meldung.ForeColor = $FARBE_WARNUNG
-        $meldung.Text = 'Symbolauswahl.ps1 fehlt neben diesem Skript.'
+        $meldung.Text = 'Symbolauswahl.ps1 is missing next to this script.'
         return
     }
     if (Test-Path $ablage) { Remove-Item $ablage -Force }
@@ -560,7 +560,7 @@ Leistenknopf 'Symbol wählen ...' 140 {
     #    reason looks like a crashed program. Disabling the button bar is
     #    enough.
     $meldung.ForeColor = [System.Drawing.Color]::DimGray
-    $meldung.Text = 'Symbolgalerie wird geöffnet, das dauert einen Moment ...'
+    $meldung.Text = 'Opening the icon gallery, this takes a moment ...'
     $leiste.Enabled = $false
     $f.Cursor = [System.Windows.Forms.Cursors]::AppStarting
     $f.Refresh()
@@ -582,7 +582,7 @@ Leistenknopf 'Symbol wählen ...' 140 {
         if (Test-Path $ablage) {
             $script:aktuellesSymbol = (Get-Content $ablage -Raw -Encoding UTF8).Trim()
             Remove-Item $ablage -Force
-            Spur ('Symbol gewählt: ' + $script:aktuellesSymbol)
+            Spur ('icon chosen: ' + $script:aktuellesSymbol)
             Zeige-Vorschau $fZiel.Text $script:aktuellesSymbol
 
             # 🔴 Write the icon into the selected entry IMMEDIATELY.
@@ -594,34 +594,34 @@ Leistenknopf 'Symbol wählen ...' 140 {
                 $merke = $script:aktuellerIndex
                 Fuelle-Liste $merke
                 $script:aktuellerIndex = $merke
-                Spur ('  sofort übernommen für: ' + $eintraege[$merke].Name)
+                Spur ('  applied straight away to: ' + $eintraege[$merke].Name)
                 $meldung.ForeColor = [System.Drawing.Color]::DarkGreen
-                $meldung.Text = 'Symbol übernommen für „' + $eintraege[$merke].Name +
-                                '". Mit Speichern sichern.'
+                $meldung.Text = 'Icon applied to “' + $eintraege[$merke].Name +
+                                '". Use Save to keep it.'
             } else {
                 $meldung.ForeColor = [System.Drawing.Color]::DarkGoldenrod
-                $meldung.Text = 'Symbol gewählt. Es gilt für den nächsten Eintrag, den du hinzufügst.'
+                $meldung.Text = 'Icon chosen. It applies to the next entry you add.'
             }
         } else {
-            Spur 'Symbolauswahl abgebrochen'
+            Spur 'icon selection cancelled'
             $meldung.ForeColor = [System.Drawing.Color]::DimGray
-            $meldung.Text = 'Symbolauswahl abgebrochen, nichts geändert.'
+            $meldung.Text = 'Icon selection cancelled, nothing changed.'
         }
     } catch {
-        Spur ('nach der Galerie: ' + $_.Exception.Message)
+        Spur ('after the gallery: ' + $_.Exception.Message)
         $meldung.ForeColor = $FARBE_WARNUNG
-        $meldung.Text = 'Das Symbol liess sich nicht übernehmen: ' + $_.Exception.Message
+        $meldung.Text = 'The icon could not be applied: ' + $_.Exception.Message
     }
 }
 
-Leistenknopf 'Symbol zurücksetzen' 155 {
+Leistenknopf 'Reset icon' 155 {
     $script:aktuellesSymbol = ''
     Zeige-Vorschau $fZiel.Text ''
     $meldung.ForeColor = [System.Drawing.Color]::DarkGreen
-    $meldung.Text = 'Wieder das Standardsymbol des Dokuments.'
+    $meldung.Text = 'Back to the default icon of the document.'
 }
 
-Leistenknopf 'Nach oben' 95 {
+Leistenknopf 'Move up' 95 {
     $i = $script:aktuellerIndex
     if ($i -lt 1) { return }
     $e = $eintraege[$i]; $eintraege.RemoveAt($i); $eintraege.Insert($i - 1, $e)
@@ -629,7 +629,7 @@ Leistenknopf 'Nach oben' 95 {
     Fuelle-Liste ($i - 1)
 }
 
-Leistenknopf 'Nach unten' 95 {
+Leistenknopf 'Move down' 95 {
     $i = $script:aktuellerIndex
     if ($i -lt 0 -or $i -ge $eintraege.Count - 1) { return }
     $e = $eintraege[$i]; $eintraege.RemoveAt($i); $eintraege.Insert($i + 1, $e)
@@ -637,18 +637,18 @@ Leistenknopf 'Nach unten' 95 {
     Fuelle-Liste ($i + 1)
 }
 
-Leistenknopf 'Textdatei öffnen' 130 { Start-Process notepad.exe $KONFIG }
+Leistenknopf 'Open text file' 130 { Start-Process notepad.exe $KONFIG }
 
-Leistenknopf 'Speichern und schließen' 180 {
+Leistenknopf 'Save and close' 180 {
     # Validate ALL rows before writing, not just the last one edited.
     $probleme = @()
     for ($i = 0; $i -lt $eintraege.Count; $i++) {
         $pr = Pruefe $eintraege[$i].Name $eintraege[$i].Ziel $eintraege $i
-        if ($pr -and -not $pr.StartsWith('HINWEIS')) { $probleme += ($eintraege[$i].Name + ': ' + $pr) }
+        if ($pr -and -not $pr.StartsWith('NOTE')) { $probleme += ($eintraege[$i].Name + ': ' + $pr) }
     }
     if ($probleme.Count) {
         [System.Windows.Forms.MessageBox]::Show(
-            ("So kann die Liste nicht gespeichert werden:`n`n" + ($probleme -join "`n")),
+            ("The list cannot be saved like this:`n`n" + ($probleme -join "`n")),
             $script:TITEL, 'OK', 'Warning') | Out-Null
         return
     }
@@ -657,11 +657,11 @@ Leistenknopf 'Speichern und schließen' 180 {
     $andere = @(Get-Process powershell -ErrorAction SilentlyContinue |
         Where-Object { $_.MainWindowTitle -like '*Apprentice*' -and $_.Id -ne $PID })
     if ($andere.Count -gt 0) {
-        $frage = 'Es ist noch ' + $andere.Count + ' weiteres Verwaltungsfenster offen.' + "`n`n" +
-                 'Wenn dort auch gespeichert wird, überschreibt es diesen Stand.' + "`n" +
-                 'Trotzdem speichern?'
+        $frage = 'There is still ' + $andere.Count + ' other management window open.' + "`n`n" +
+                 'If it saves too, it will overwrite this state.' + "`n" +
+                 'Save anyway?'
         if ([System.Windows.Forms.MessageBox]::Show($frage, $script:TITEL, 'YesNo', 'Warning') -ne 'Yes') {
-            Spur 'Speichern abgebrochen wegen zweitem Fenster'
+            Spur 'save cancelled because of a second window'
             return
         }
     }
@@ -681,23 +681,23 @@ Leistenknopf 'Speichern und schließen' 180 {
             $e.Ziel = $zielNeu
             $e.Gruppe = $gruppeNeu
             $e.Symbol = $script:aktuellesSymbol
-            Spur ('  offene Änderung am Eintrag ' + $i + ' vor dem Speichern übernommen')
+            Spur ('  pending change to entry ' + $i + ' applied before saving')
         }
     }
     $mitSymbol = @($eintraege | Where-Object { $_.Symbol }).Count
-    Spur ('Speichern: ' + $eintraege.Count + ' Einträge, davon ' + $mitSymbol + ' mit eigenem Symbol')
+    Spur ('saving: ' + $eintraege.Count + ' entries, of which ' + $mitSymbol + ' have their own icon')
     Schreib-Eintraege $eintraege
-    Spur 'gespeichert'
+    Spur 'saved'
     $f.Close()
 }
 
-Leistenknopf 'Abbrechen' 95 { $f.Close() }
+Leistenknopf 'Cancel' 95 { $f.Close() }
 
 # ─── Selection, file dialogs, validation on every keystroke ───────────
 $knopfDatei.Add_Click({
     $d = New-Object System.Windows.Forms.OpenFileDialog
-    $d.Title = 'Welche Datei soll in den Schnellzugriff?'
-    $d.Filter = 'Alle Dateien (*.*)|*.*'
+    $d.Title = 'Which file should go into the quick access list?'
+    $d.Filter = 'All files (*.*)|*.*'
     if ($d.ShowDialog() -eq 'OK') {
         $fZiel.Text = $d.FileName
         if (-not $fName.Text.Trim()) { $fName.Text = [IO.Path]::GetFileName($d.FileName) }
@@ -705,7 +705,7 @@ $knopfDatei.Add_Click({
 })
 $knopfOrdner.Add_Click({
     $d = New-Object System.Windows.Forms.FolderBrowserDialog
-    $d.Description = 'Welcher Ordner soll in den Schnellzugriff?'
+    $d.Description = 'Which folder should go into the quick access list?'
     if ($d.ShowDialog() -eq 'OK') {
         $fZiel.Text = $d.SelectedPath
         if (-not $fName.Text.Trim()) { $fName.Text = Split-Path $d.SelectedPath -Leaf }
@@ -764,26 +764,26 @@ function Aktualisiere-Gruppen {
 
 Aktualisiere-Gruppen
 Fuelle-Liste
-Spur 'Fenster anzeigen'
+Spur 'show window'
 $f.Add_Shown({
-    Spur ('erschienen, Größe=' + $f.Size + ' Ort=' + $f.Location)
+    Spur ('appeared, size=' + $f.Size + ' location=' + $f.Location)
     $f.WindowState = 'Normal'
     $f.Activate()
 })
 # Who is closing the window? CloseReason names the cause.
 $f.Add_FormClosing({
-    Spur ('schliesst, Grund=' + $_.CloseReason + ' DialogResult=' + $f.DialogResult)
-    Spur ('  Aufrufkette: ' + ((Get-PSCallStack | Select-Object -First 4 |
+    Spur ('closing, reason=' + $_.CloseReason + ' DialogResult=' + $f.DialogResult)
+    Spur ('  call stack: ' + ((Get-PSCallStack | Select-Object -First 4 |
         ForEach-Object { $_.Command + ':' + $_.ScriptLineNumber }) -join ' < '))
 })
 # Unhandled errors in events would otherwise end the loop silently.
 [System.Windows.Forms.Application]::add_ThreadException({
     param($absender, $daten)
-    Spur ('THREAD-FEHLER: ' + $daten.Exception.Message)
+    Spur ('THREAD ERROR: ' + $daten.Exception.Message)
 })
 [AppDomain]::CurrentDomain.add_UnhandledException({
     param($absender, $daten)
-    Spur ('UNBEHANDELT: ' + $daten.ExceptionObject)
+    Spur ('UNHANDLED: ' + $daten.ExceptionObject)
 })
 # DA-20260913-163439041-83d7: colour first, then show -- after the layout
 # is complete, so every control is in place.
@@ -791,4 +791,4 @@ QA-Dunkel $f
 
 # Application::Run NEEDS the form as its argument.
 [System.Windows.Forms.Application]::Run($f)
-Spur 'geschlossen'
+Spur 'closed'
