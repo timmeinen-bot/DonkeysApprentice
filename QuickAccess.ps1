@@ -38,7 +38,7 @@ if (-not (Test-Path -LiteralPath $global:QA.Daten)) {
 }
 $global:QA.Konfig = Join-Path $global:QA.Daten 'quickaccess.txt'
 
-# Uebernahme aelterer Staende: bis zum 13.09.2026 lag die Liste neben dem
+# Übernahme aelterer Staende: bis zum 13.09.2026 lag die Liste neben dem
 # Skript. Ohne diesen Schritt stuende der Benutzer nach einem Update vor
 # einem leeren Fenster.
 $qa_alt = Join-Path $global:QA.Basis 'quickaccess.txt'
@@ -101,7 +101,7 @@ function global:QA-Log($text) {
 function global:QA-Oeffne($ziel) {
     if (-not $ziel) { QA-Log 'Klick ohne Ziel'; return }
     QA-Log ('oeffne: ' + $ziel)
-    # 🔴 %VARIABLEN% aufloesen, BEVOR irgendetwas geprueft wird. Ohne das
+    # 🔴 %VARIABLEN% aufloesen, BEVOR irgendetwas geprüft wird. Ohne das
     #    scheitert Test-Path an '%USERPROFILE%\Documents' und jeder Eintrag
     #    der mitgelieferten Beispielliste meldet „Nicht gefunden" -- die
     #    Liste MUSS ohne feste Pfade auskommen, sonst traegt sie wieder die
@@ -130,7 +130,7 @@ function global:QA-Oeffne($ziel) {
         }
         # 🔴 -WorkingDirectory MIT ANGEBEN. Ohne das erbt der neue Prozess
         #    das Arbeitsverzeichnis des Tray-Tools; Excel stolpert dann
-        #    ueber Pfade mit „&" im Namen und oeffnet kommentarlos nichts.
+        #    über Pfade mit „&" im Namen und oeffnet kommentarlos nichts.
         if ((Get-Item -LiteralPath $ziel).PSIsContainer) {
             # 🔴 ORDNER LASSEN SICH NICHT MIT Start-Process -FilePath OEFFNEN.
             #    Windows antwortet mit „Dieser Befehl kann nicht vollständig
@@ -254,9 +254,9 @@ function global:QA-BrowserSymbol {
     # Symbol des Browsers, der wirklich benutzt wird.
     #
     # 🔴 Tim, 07.09.: „zeigt DA Edge-Icon für http-Link, wenn Chrome
-    #    Standardbrowser". Windows fuehrt hier fuer http, https und
+    #    Standardbrowser". Windows führt hier für http, https und
     #    .html tatsaechlich MSEdgeHTM - Edge hat sich die Zuordnung
-    #    zurueckgeholt. Wonach der Rechner benutzt wird, sagt die
+    #    zurückgeholt. Wonach der Rechner benutzt wird, sagt die
     #    Registry damit nicht. Also zaehlt zuerst, welcher Browser
     #    LAEUFT; erst wenn keiner offen ist, gilt die Zuordnung.
     if ($global:QA.ContainsKey('BrowserSymbol')) { return $global:QA.BrowserSymbol }
@@ -357,7 +357,7 @@ function global:QA-SvgSymbol([string]$svg) {
     # Spielarten, die sich von Hand zeichnen lassen:
     #   1. Emoji-Favicon: <text ...>🏠</text>  (Cockpit, KODI, HM-Protokoll)
     #   2. Pixel-Icon aus <rect>-Kacheln        (JD-Prozessor /favicon.svg)
-    # Echte Pfad-SVG faellt auf $null zurueck -> dann greift das Browsersymbol.
+    # Echte Pfad-SVG faellt auf $null zurück -> dann greift das Browsersymbol.
     try {
         $vw = 16.0; $vh = 16.0
         $vb = [regex]::Match($svg, 'viewBox\s*=\s*["'']\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)')
@@ -422,11 +422,11 @@ function global:QA-BildAlsSymbol([byte[]]$daten) {
             if ($s) { return $s }
         }
     } catch { }
-    # ICO direkt, alles andere (PNG, GIF) ueber eine Bitmap.
+    # ICO direkt, alles andere (PNG, GIF) über eine Bitmap.
     #
     # ⚠️ Der Icon-Konstruktor GELINGT auch dann, wenn im ICO ein
     #    PNG steckt -- erst das spaetere ToBitmap() wirft
-    #    „Der angeforderte Bereich geht ueber das Arrayende hinaus“.
+    #    „Der angeforderte Bereich geht über das Arrayende hinaus“.
     #    Der Rueckfall unten lief deshalb nie an, und das Symbol fehlte
     #    stillschweigend in der Liste (so bei trello.com: ein einzelnes
     #    256x256-PNG in einer ICO-Huelle). Darum wird hier einmal
@@ -465,16 +465,16 @@ function global:QA-Favicon($ziel) {
     if (-not $adresse.Host) { return $null }
 
     $ordner = QA-FaviconOrdner
-    # ⚠️ Port gehoert in den Namen: auf der NAS liegen DSM, Grafana,
+    # ⚠️ Port gehört in den Namen: auf der NAS liegen DSM, Grafana,
     #    Node-RED und Eselcockpit alle unter derselben Adresse und wuerden
-    #    sich sonst gegenseitig das Symbol ueberschreiben.
+    #    sich sonst gegenseitig das Symbol überschreiben.
     $name   = (($adresse.Host + '_' + $adresse.Port) -replace '[^A-Za-z0-9\.\-]', '_')
     $bild   = Join-Path $ordner ($name + '.ico')
     $nichts = Join-Path $ordner ($name + '.keins')
 
     if (Test-Path -LiteralPath $bild) {
-        # Direkt ueber QA-BildAlsSymbol: Die Pruefung auf Zeichenbarkeit
-        # steckt dort. Ein Icon aus der Datei zu bauen und es ungeprueft
+        # Direkt über QA-BildAlsSymbol: Die Prüfung auf Zeichenbarkeit
+        # steckt dort. Ein Icon aus der Datei zu bauen und es ungeprüft
         # zurueckzugeben, war genau der Weg, auf dem das Trello-Symbol
         # jedes Mal aufs Neue durchfiel.
         try {
@@ -485,17 +485,17 @@ function global:QA-Favicon($ziel) {
     # DA-20260914-093332250-030d: Der Vermerk galt pauschal 14 Tage.
     # Am 14.09. hiess das: um 08:05 scheiterte das Symbol der Netzkarte,
     # um 08:06:57 wurde der Dienst geaendert und lieferte eins -- und DA
-    # haette bis zum 28.09. nicht mehr nachgesehen. Der Vermerk war
+    # hätte bis zum 28.09. nicht mehr nachgesehen. Der Vermerk war
     # aelter als die Tatsache, die er beschrieb.
     #
     # Zwei Riegel dagegen:
     #   a) Wurde quickaccess.txt seither angefasst, ist jeder Vermerk
     #      hinfaellig -- ein neu eingetragenes Ziel hat noch nie
-    #      funktioniert, ein Fehlschlag von vorher gehoert nicht dazu.
+    #      funktioniert, ein Fehlschlag von vorher gehört nicht dazu.
     #   b) Die Frist waechst erst mit der Zahl der Fehlschlaege: ein Tag,
     #      und erst ab dem dritten Mal die vollen 14. So kostet ein
     #      hoffnungsloser Fall weiter keine Zeit, ein frisch gebautes
-    #      Symbol wird aber am naechsten Tag gefunden.
+    #      Symbol wird aber am nächsten Tag gefunden.
     if (Test-Path -LiteralPath $nichts) {
         $vermerk = Get-Item -LiteralPath $nichts
         $verfallen = $false
@@ -580,7 +580,7 @@ function global:QA-Favicon($ziel) {
                 $daten = $antwort.Content
                 # 🔴 Ein als Text ausgeliefertes Favicon (z.B. /favicon.svg mit
                 #    Content-Type image/svg+xml) kommt bei IWR als String, nicht
-                #    als Byte-Feld - vorher fiel es durch die Pruefung unten und
+                #    als Byte-Feld - vorher fiel es durch die Prüfung unten und
                 #    das JD-Prozessor-Symbol fehlte. In Bytes umsetzen.
                 if ($daten -is [string]) { $daten = [Text.Encoding]::UTF8.GetBytes($daten) }
             }
@@ -683,7 +683,7 @@ $global:QA.Overlay = $overlay
 
 # Drei Zonen untereinander: Reiter (oben), Eintraege (Mitte, scrollt),
 # Fuss (unten). Tim, 07.09.: „staerker nach Gruppen ... als Tabs ... keine
-# Klicks" - die Gruppen werden Reiter, ueber die man nur faehrt.
+# Klicks" - die Gruppen werden Reiter, über die man nur faehrt.
 $wrap = New-Object System.Windows.Forms.TableLayoutPanel
 $wrap.Dock = 'Fill'
 $wrap.ColumnCount = 1
@@ -705,8 +705,8 @@ $reiter.Padding = New-Object System.Windows.Forms.Padding(4, 4, 4, 2)
 $wrap.Controls.Add($reiter, 0, 0)
 $global:QA.Reiter = $reiter
 
-# Absichts-Verzoegerung fuer die Reiter (DA-20260913-101000444-35d3).
-# 250 ms: unter 150 rutschen schnelle Mausbewegungen durch, ueber 350
+# Absichts-Verzoegerung für die Reiter (DA-20260913-101000444-35d3).
+# 250 ms: unter 150 rutschen schnelle Mausbewegungen durch, über 350
 # fuehlt sich das Umschalten traege an. Wer den Wert aendern will,
 # aendert genau diese eine Zahl.
 $global:QA.ReiterUhr = New-Object System.Windows.Forms.Timer
@@ -752,7 +752,7 @@ $global:QA_Rein = {
     if (-not $panel) { return }
     # 🔴 ZUERST ALLE ANDEREN ZEILEN ZURUECKSETZEN. MouseLeave feuert nicht
     #    verlaesslich, wenn der Zeiger von einer Beschriftung direkt in die
-    #    naechste Zeile wandert - dann blieben mehrere Zeilen markiert.
+    #    nächste Zeile wandert - dann blieben mehrere Zeilen markiert.
     foreach ($c in $global:QA.Inhalt.Controls) {
         if ($c -is [System.Windows.Forms.Panel] -and $c -ne $panel) {
             if ($c.BackColor -ne $global:QA.FarbeNormal) {
@@ -767,7 +767,7 @@ $global:QA_Rein = {
 $global:QA_Raus = {
     $panel = if ($this -is [System.Windows.Forms.Panel]) { $this } else { $this.Parent }
     if (-not $panel) { return }
-    # Nur zuruecksetzen, wenn der Zeiger die Zeile wirklich verlassen hat -
+    # Nur zurücksetzen, wenn der Zeiger die Zeile wirklich verlassen hat -
     # sonst flackert es beim Wechsel zwischen Symbol und Beschriftung.
     $ecke = $panel.PointToClient([System.Windows.Forms.Cursor]::Position)
     if ($ecke.X -lt 0 -or $ecke.Y -lt 0 -or
@@ -793,7 +793,7 @@ function global:QA-BaueZeile($e) {
     $bild.Location = New-Object System.Drawing.Point(8, 6)
     $bild.SizeMode = 'StretchImage'
     # Ein ausdruecklich gewaehltes Symbol (| Quelle,Nummer) schlaegt das
-    # Favicon/Standardsymbol - Tim: „Favicon ... wenn keins ueberschrieben".
+    # Favicon/Standardsymbol - Tim: „Favicon ... wenn keins überschrieben".
     $sym = $null
     if ($e.Symbol) {
         $teile = $e.Symbol -split ','
@@ -811,7 +811,7 @@ function global:QA-BaueZeile($e) {
         try { $bild.Image = $sym.ToBitmap() }
         catch { QA-Log ('Symbol nicht darstellbar (' + $e.Name + '): ' + $_.Exception.Message) }
     } else {
-        QA-Log ('kein Symbol fuer ' + $e.Name + ' -> ' + $e.Ziel)
+        QA-Log ('kein Symbol für ' + $e.Name + ' -> ' + $e.Ziel)
     }
     $bild.Tag = $e.Ziel
     $bild.Cursor = [System.Windows.Forms.Cursors]::Hand
@@ -874,7 +874,7 @@ function global:QA-ZeigeGruppe($name) {
 
 function global:QA-Version {
     # DA-20260913-222957620-81a8: die Nummer entsteht beim PAKETBAU und
-    # steht in version.txt. Fehlt die Datei, laeuft DA aus dem
+    # steht in version.txt. Fehlt die Datei, läuft DA aus dem
     # Arbeitsordner -- dann ist es kein gebauter Stand, und das soll man
     # sehen, statt eine Zahl zu erfinden.
     $v = Join-Path $global:QA.Basis 'version.txt'
@@ -908,14 +908,57 @@ github.com/eselchenlabs/donkeys-apprentice
 
 Der volle Lizenztext liegt als LICENSE im Programmordner.
 "@
-    QA-Log 'Ueber-Fenster geoeffnet'
+    QA-Log 'Über-Fenster geoeffnet'
     [System.Windows.Forms.MessageBox]::Show(
-        $text, "Ueber Donkey's Apprentice", 'OK', 'Information') | Out-Null
+        $text, "Über Donkey's Apprentice", 'OK', 'Information') | Out-Null
+}
+
+# DA-20260917-174940488-ae95: Das Overlay schliesst sich, sobald die
+# Maus es verlaesst -- wer etwas nachlesen oder eine Adresse kopieren
+# will, verliert es dabei. Angeheftet bleibt es stehen.
+#
+# Kein Rahmen, keine Titelleiste: ein FormBorderStyle am Overlay macht
+# aus dem Popup ein Fenster mit ganz anderer Anmutung. Ein Knopf in der
+# vorhandenen Fussleiste reicht.
+function global:QA-ZeichneAnheften {
+    $pin = $global:QA.PinKnopf
+    if (-not $pin) { return }
+    if ($global:QA.Angeheftet) {
+        $pin.Text = 'Angeheftet'
+        $pin.ForeColor = $global:FARBE_TEXT
+    } else {
+        $pin.Text = 'Anheften'
+        $pin.ForeColor = $global:FARBE_GRUPPE
+    }
 }
 
 function global:QA-BaueFuss {
     $fuss = $global:QA.Fuss
     $fuss.Controls.Clear()
+
+    $pin = New-Object System.Windows.Forms.Label
+    $pin.UseMnemonic = $false
+    $pin.Font = New-Object System.Drawing.Font('Segoe UI', 8)
+    $pin.AutoSize = $true
+    $pin.Margin = New-Object System.Windows.Forms.Padding(0, 4, 16, 4)
+    $pin.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $pin.Add_Click({
+        $global:QA.Angeheftet = -not $global:QA.Angeheftet
+        QA-ZeichneAnheften
+        # Loesen heisst nicht schliessen: die Wache uebernimmt wieder,
+        # sobald die Maus den Rahmen verlaesst. Der Zaehler faengt bei
+        # 0 an, damit nicht ein alter Stand sofort zuschlaegt.
+        $global:QA.Draussen = 0
+    })
+    $pin.Add_MouseEnter({ $this.ForeColor = $global:FARBE_TEXT })
+    # Nicht fest auf FARBE_GRUPPE zuruecksetzen -- im angehefteten
+    # Zustand ist der Knopf hell, und ein Mauszeiger, der darueber
+    # hinwegstreift, darf das nicht loeschen.
+    $pin.Add_MouseLeave({ QA-ZeichneAnheften })
+    [void]$fuss.Controls.Add($pin)
+    $global:QA.PinKnopf = $pin
+    QA-ZeichneAnheften
+
     foreach ($paar in @(
         @('Verwalten', {
             # Verwaltung als eigener Prozess (sonst blockiert das modale
@@ -931,7 +974,7 @@ function global:QA-BaueFuss {
         # erreichbar sein. Eine Sprechblase verschwindet wieder, ein
         # Menuepunkt nicht. Keine Versionsnummer -- DA hat heute keine,
         # und eine einzufuehren ist eine eigene Sache.
-        @('Ueber',     { QA-ZeigeUeber }),
+        @('Über',     { QA-ZeigeUeber }),
         @('Beenden',   { $global:QA.Tray.Visible = $false
                          [System.Windows.Forms.Application]::Exit() }))) {
         $knopf = New-Object System.Windows.Forms.Label
@@ -983,7 +1026,7 @@ function global:QA-BaueOverlay {
         # Reiter der ersten Zeile hinunter zum Inhalt kreuzt dann
         # zwangslaeufig die zweite Zeile - und jedes Kreuzen schaltete
         # bisher die Gruppe um. Man landete verlaesslich im Inhalt der
-        # zuletzt ueberquerten Gruppe.
+        # zuletzt überquerten Gruppe.
         #
         # Wer waehlen will, bleibt stehen; wer nur durchfaehrt, ist in
         # 40-80 ms wieder draussen und MouseLeave stoppt die Uhr.
@@ -1028,6 +1071,10 @@ function global:QA-BaueOverlay {
 }
 
 function global:QA-Zeige {
+    # Jedes Oeffnen faengt unangeheftet an. Ein Zustand, der ein Fenster
+    # dauerhaft offen haelt, darf keinen Aufruf ueberleben -- sonst
+    # steht das Overlay irgendwann da und niemand weiss, warum.
+    $global:QA.Angeheftet = $false
     QA-BaueOverlay
     $ov = $global:QA.Overlay
     $flaeche = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
@@ -1075,7 +1122,22 @@ $tray.Visible = $true
 $global:QA.Tray = $tray
 
 $tray.Add_MouseMove({ if (-not $global:QA.Overlay.Visible) { QA-Zeige } })
-$tray.Add_MouseClick({ if (-not $global:QA.Overlay.Visible) { QA-Zeige } })
+$tray.Add_MouseClick({
+    if ($global:QA.Overlay.Visible) {
+        # Angeheftet: ein Klick auf den Esel loest und schliesst. Damit
+        # gibt es immer einen Weg zurueck, auch ohne den Knopf zu
+        # treffen. ⚠ Bewusst NICHT bei MouseMove -- das Overlay sitzt
+        # dicht am Infobereich, und jeder Weg der Maus dorthin wuerde es
+        # wegreissen.
+        if ($global:QA.Angeheftet) {
+            $global:QA.Angeheftet = $false
+            QA-ZeichneAnheften
+            $global:QA.Overlay.Hide()
+        }
+        return
+    }
+    QA-Zeige
+})
 
 # ⚠️ Nicht über Deactivate schließen: das Overlay bekommt gar keinen Fokus,
 #    sonst müsste man ja doch klicken. Stattdessen die Mausposition prüfen,
@@ -1086,6 +1148,9 @@ $wache.Interval = 250
 $wache.Add_Tick({
     $ov = $global:QA.Overlay
     if (-not $ov.Visible) { $global:QA.Draussen = 0; return }
+    # Angeheftet: die Wache zaehlt nicht mit.
+    # DA-20260917-174940488-ae95
+    if ($global:QA.Angeheftet) { $global:QA.Draussen = 0; return }
     $maus = [System.Windows.Forms.Cursor]::Position
     $rahmen = New-Object System.Drawing.Rectangle(
         ($ov.Left - 12), ($ov.Top - 12), ($ov.Width + 24), ($ov.Height + 40))

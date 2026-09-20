@@ -251,7 +251,7 @@ if (-not $vorgewaehlt -and $auswahlQuelle.Items.Count -gt 0 -and $galerie.Items.
 
 # 🔴 ERST ZEIGEN, DANN LADEN. Vorher lief das Laden von 335 Symbolen
 #    noch vor ShowDialog - das Fenster erschien mehrere Sekunden spaeter,
-#    waehrend die Verwaltung schon gesperrt war. Von aussen sah das aus
+#    während die Verwaltung schon gesperrt war. Von aussen sah das aus
 #    wie ein haengendes Programm.
 $f.Add_Shown({
     $f.Activate()
@@ -265,7 +265,7 @@ $f.Add_Shown({
     catch { Spur ('Erstauswahl gescheitert: ' + $_.Exception.Message) }
     Spur ('Zustand: Eintraege=' + $galerie.Items.Count +
           ' markiert=' + $galerie.SelectedItems.Count +
-          ' Uebernehmen-aktiv=' + $knopfOk.Enabled +
+          ' Übernehmen-aktiv=' + $knopfOk.Enabled +
           ' Ergebnis=[' + $script:ergebnis + ']')
 })
 # DA-20260913-163439041-83d7: erst faerben, dann zeigen.

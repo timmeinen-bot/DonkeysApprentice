@@ -5,7 +5,7 @@
 # und diese Beispieldatei nie wieder angefasst.
 #
 # Format:
-#   [Gruppe]                 wird zur Ueberschrift
+#   [Gruppe]                 wird zur Überschrift
 #   Name = Ziel              Datei, Ordner oder Adresse
 #   Name = Ziel | Quelle,Nr  eigenes Symbol, z.B. shell32.dll,44
 #   Ziel                     ohne "=": der Dateiname wird zum Namen

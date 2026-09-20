@@ -1,4 +1,4 @@
-﻿# QA-Stil.ps1 -- eine Quelle fuer das Aussehen aller DA-Fenster.
+﻿# QA-Stil.ps1 -- eine Quelle für das Aussehen aller DA-Fenster.
 #
 # DA-20260913-163439041-83d7: Die Verwaltung sah aus wie ein fremdes
 # Programm -- Windows-Grau gegen das dunkle Overlay. Zwei Kopien
@@ -10,7 +10,7 @@
 #    und bleiben hell. Das ist keine Nachlaessigkeit, sondern die Grenze.
 
 # Die Palette braucht System.Drawing. Wer diese Datei laedt,
-# soll sich nicht darum kuemmern muessen.
+# soll sich nicht darum kuemmern müssen.
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
@@ -20,7 +20,7 @@ $global:FARBE_TEXT    = [System.Drawing.Color]::FromArgb(240, 240, 240)
 $global:FARBE_GRUPPE  = [System.Drawing.Color]::FromArgb(150, 150, 160)
 $global:FARBE_FEHLT   = [System.Drawing.Color]::FromArgb(130, 130, 130)
 # Eingabefelder etwas tiefer als der Grund, damit sie als Felder lesbar
-# bleiben; Rot auf dunklem Grund waere Firebrick -- zu dunkel.
+# bleiben; Rot auf dunklem Grund wäre Firebrick -- zu dunkel.
 $global:FARBE_FELD    = [System.Drawing.Color]::FromArgb(40, 40, 46)
 $global:FARBE_RAND    = [System.Drawing.Color]::FromArgb(70, 70, 80)
 $global:FARBE_WARNUNG = [System.Drawing.Color]::FromArgb(240, 150, 150)

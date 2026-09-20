@@ -21,7 +21,7 @@ $ErrorActionPreference = 'Stop'
 $BASIS = $PSScriptRoot
 if (-not $BASIS) { $BASIS = Split-Path -Parent $MyInvocation.MyCommand.Path }
 # 🔴 Kein fester Benutzerpfad als Rueckfall -- der trug bis zum
-#    13.09.2026 Tims Profilnamen im Quelltext aus (DA 2/9) und waere auf
+#    13.09.2026 Tims Profilnamen im Quelltext aus (DA 2/9) und wäre auf
 #    jedem anderen Rechner falsch gewesen.
 if (-not $BASIS) { $BASIS = Join-Path $env:LOCALAPPDATA 'QuickAccess' }
 # Geschrieben wird nur unter %LOCALAPPDATA% (DA-20260913-144004296-42e6).
@@ -50,11 +50,11 @@ if ($konsole -ne [IntPtr]::Zero) { [void][QA.Fenster]::ShowWindow($konsole, 0) }
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-# Fuer die einfache Eingabebox beim Umbenennen einer Gruppe.
+# Für die einfache Eingabebox beim Umbenennen einer Gruppe.
 Add-Type -AssemblyName Microsoft.VisualBasic
 
 # ExtractAssociatedIcon kann KEINEN Index und liefert immer nur das erste
-# Symbol einer Datei. Fuer "shell32.dll,44" braucht es ExtractIconEx.
+# Symbol einer Datei. Für "shell32.dll,44" braucht es ExtractIconEx.
 Add-Type -Namespace QA -Name Symbole -MemberDefinition @'
 [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
 public static extern int ExtractIconExW(string datei, int index, out IntPtr gross, out IntPtr klein, int anzahl);
@@ -63,7 +63,7 @@ public static extern bool DestroyIcon(IntPtr handle);
 '@
 
 function Hol-Symbol($quelle, $index) {
-    # Gibt ein Bitmap zurueck oder $null. Das Handle wird immer freigegeben.
+    # Gibt ein Bitmap zurück oder $null. Das Handle wird immer freigegeben.
     $gross = [IntPtr]::Zero; $klein = [IntPtr]::Zero
     try {
         $n = [QA.Symbole]::ExtractIconExW($quelle, [int]$index, [ref]$gross, [ref]$klein, 1)
@@ -437,7 +437,7 @@ Leistenknopf 'Hinzufügen' 105 {
 }
 
 Leistenknopf 'Übernehmen' 105 {
-    Spur ('Uebernehmen gedrueckt: Index=' + $script:aktuellerIndex +
+    Spur ('Übernehmen gedrueckt: Index=' + $script:aktuellerIndex +
           ' Name=[' + $fName.Text + '] Symbol=[' + $script:aktuellesSymbol + ']')
     # 🔴 Tim, 07.09.: „DA kann keinen neuen Eintrag speichern, alle Felder
     #    ausgefüllt, immer noch ,Erst einen Eintrag in der Liste wählen'".
@@ -543,8 +543,8 @@ Leistenknopf 'Gruppe ▲' 92 { Verschiebe-Gruppe -1 }
 Leistenknopf 'Gruppe ▼' 92 { Verschiebe-Gruppe 1 }
 
 Leistenknopf 'Symbol wählen ...' 140 {
-    # Die Galerie laeuft als eigener Prozess und gibt ihr Ergebnis ueber
-    # eine kleine Datei zurueck - eine Variable kann sie nicht teilen.
+    # Die Galerie läuft als eigener Prozess und gibt ihr Ergebnis über
+    # eine kleine Datei zurück - eine Variable kann sie nicht teilen.
     $galerieSkript = Join-Path $BASIS 'Symbolauswahl.ps1'
     $ablage = Join-Path $BASIS 'symbolauswahl.txt'
     if (-not (Test-Path $galerieSkript)) {
@@ -585,14 +585,14 @@ Leistenknopf 'Symbol wählen ...' 140 {
 
             # 🔴 Das Symbol SOFORT in den markierten Eintrag schreiben.
             #    Vorher landete es nur in einer Variablen und war weg, wenn
-            #    jemand direkt auf Speichern ging statt auf Uebernehmen -
+            #    jemand direkt auf Speichern ging statt auf Übernehmen -
             #    genau so ist es am 06.09. passiert, ohne jede Meldung.
             if ($script:aktuellerIndex -ge 0 -and $script:aktuellerIndex -lt $eintraege.Count) {
                 $eintraege[$script:aktuellerIndex].Symbol = $script:aktuellesSymbol
                 $merke = $script:aktuellerIndex
                 Fuelle-Liste $merke
                 $script:aktuellerIndex = $merke
-                Spur ('  sofort uebernommen fuer: ' + $eintraege[$merke].Name)
+                Spur ('  sofort übernommen für: ' + $eintraege[$merke].Name)
                 $meldung.ForeColor = [System.Drawing.Color]::DarkGreen
                 $meldung.Text = 'Symbol übernommen für „' + $eintraege[$merke].Name +
                                 '". Mit Speichern sichern.'
@@ -608,7 +608,7 @@ Leistenknopf 'Symbol wählen ...' 140 {
     } catch {
         Spur ('nach der Galerie: ' + $_.Exception.Message)
         $meldung.ForeColor = $FARBE_WARNUNG
-        $meldung.Text = 'Das Symbol liess sich nicht uebernehmen: ' + $_.Exception.Message
+        $meldung.Text = 'Das Symbol liess sich nicht übernehmen: ' + $_.Exception.Message
     }
 }
 
@@ -650,13 +650,13 @@ Leistenknopf 'Speichern und schließen' 180 {
             $script:TITEL, 'OK', 'Warning') | Out-Null
         return
     }
-    # ⚠️ Zwei offene Verwaltungsfenster ueberschreiben sich beim Speichern
+    # ⚠️ Zwei offene Verwaltungsfenster überschreiben sich beim Speichern
     #    gegenseitig - der zuletzt Speichernde gewinnt, der andere Stand ist weg.
     $andere = @(Get-Process powershell -ErrorAction SilentlyContinue |
         Where-Object { $_.MainWindowTitle -like '*Apprentice*' -and $_.Id -ne $PID })
     if ($andere.Count -gt 0) {
         $frage = 'Es ist noch ' + $andere.Count + ' weiteres Verwaltungsfenster offen.' + "`n`n" +
-                 'Wenn dort auch gespeichert wird, ueberschreibt es diesen Stand.' + "`n" +
+                 'Wenn dort auch gespeichert wird, überschreibt es diesen Stand.' + "`n" +
                  'Trotzdem speichern?'
         if ([System.Windows.Forms.MessageBox]::Show($frage, $script:TITEL, 'YesNo', 'Warning') -ne 'Yes') {
             Spur 'Speichern abgebrochen wegen zweitem Fenster'
@@ -679,7 +679,7 @@ Leistenknopf 'Speichern und schließen' 180 {
             $e.Ziel = $zielNeu
             $e.Gruppe = $gruppeNeu
             $e.Symbol = $script:aktuellesSymbol
-            Spur ('  offene Aenderung am Eintrag ' + $i + ' vor dem Speichern uebernommen')
+            Spur ('  offene Änderung am Eintrag ' + $i + ' vor dem Speichern übernommen')
         }
     }
     $mitSymbol = @($eintraege | Where-Object { $_.Symbol }).Count
@@ -784,7 +784,7 @@ $f.Add_FormClosing({
     Spur ('UNBEHANDELT: ' + $daten.ExceptionObject)
 })
 # DA-20260913-163439041-83d7: erst faerben, dann zeigen --
-# nach dem vollstaendigen Aufbau, damit jedes Bauteil steht.
+# nach dem vollständigen Aufbau, damit jedes Bauteil steht.
 QA-Dunkel $f
 
 # Application::Run BRAUCHT das Formular als Argument.

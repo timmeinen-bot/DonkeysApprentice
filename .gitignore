@@ -1,0 +1,11 @@
+# Sicherungen gehoeren nicht in ein oeffentliches Repo.
+*.vor_*
+*.bak
+*.bak.*
+*.alt.*
+# Arbeitsnotizen fuer Claude.
+CLAUDE.md
+.claude/
+# Die eigene Eintragsliste ist privat -- nur das Beispiel geht hinaus.
+quickaccess.txt
+symbole/
