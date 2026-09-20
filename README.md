@@ -53,8 +53,12 @@ Name = Target | Source,Index
   document's own icon.
 * The vertical bar is forbidden in Windows paths, which is exactly why it works
   as a separator.
-* The file is **UTF-8 with a byte order mark (BOM)**. Without the BOM,
-  PowerShell 5.1 reads it as ANSI and every non-ASCII character breaks.
+* The file is **UTF-8**. The management window writes it with a byte order
+  mark (`UTF8Encoding $true`), and both scripts read it with an explicit
+  `Get-Content -Encoding UTF8`. Measured on PowerShell 5.1.26100: with
+  that parameter the file reads correctly **with or without** a BOM.
+  Only a read *without* the parameter falls back to ANSI and mangles
+  non-ASCII characters.
 
 ## Icon gallery
 
