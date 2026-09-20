@@ -20,7 +20,7 @@ $ErrorActionPreference = 'Stop'
 # PSScriptRoot ist bei -File zuverlässiger als MyInvocation.
 $BASIS = $PSScriptRoot
 if (-not $BASIS) { $BASIS = Split-Path -Parent $MyInvocation.MyCommand.Path }
-# 🔴 Kein fester Benutzerpfad als Rueckfall -- der trug bis zum
+# 🔴 Kein fester Benutzerpfad als Rückfall -- der trug bis zum
 #    13.09.2026 Tims Profilnamen im Quelltext aus (DA 2/9) und wäre auf
 #    jedem anderen Rechner falsch gewesen.
 if (-not $BASIS) { $BASIS = Join-Path $env:LOCALAPPDATA 'QuickAccess' }
@@ -161,13 +161,13 @@ function Pruefe($name, $ziel, $liste, $ausser = -1) {
     return $null
 }
 
-# 🔴 PowerShell entrollt eine aus einer Funktion zurueckgegebene ArrayList
+# 🔴 PowerShell entrollt eine aus einer Funktion zurückgegebene ArrayList
 #    zu einem FESTEN object[] - dann wirft .Add()/.Clear()/.RemoveAt()
-#    „Die Liste hatte eine feste Groesse". Darum hier wieder in eine echte
-#    ArrayList fassen, sonst sind Hinzufuegen, Loeschen und die
-#    Gruppen-Knoepfe unzuverlaessig.
+#    „Die Liste hatte eine feste Größe". Darum hier wieder in eine echte
+#    ArrayList fassen, sonst sind Hinzufügen, Löschen und die
+#    Gruppen-Knöpfe unzuverlässig.
 $eintraege = [System.Collections.ArrayList]@(Lies-Eintraege)
-Spur ('Eintraege: ' + $eintraege.Count)
+Spur ('Einträge: ' + $eintraege.Count)
 
 # ---------------------------------------------------------------------
 #  Fenster
@@ -345,7 +345,7 @@ function Zeige-Vorschau($ziel, $symbol) {
             if ($teile.Count -gt 1) { [void][int]::TryParse($teile[1].Trim(), [ref]$index) }
             if ($quelle -and (Test-Path -LiteralPath $quelle)) {
                 # Hier NICHT ExtractAssociatedIcon nehmen - das zeigt sonst
-                # immer Symbol 0 statt des gewaehlten.
+                # immer Symbol 0 statt des gewählten.
                 $bild = Hol-Symbol $quelle $index
                 if (-not $bild) {
                     $bild = ([System.Drawing.Icon]::ExtractAssociatedIcon($quelle)).ToBitmap()
@@ -365,7 +365,7 @@ function Zeige-Vorschau($ziel, $symbol) {
             }
         }
     } catch { Spur ('Vorschau: ' + $_.Exception.Message) }
-    # 🔴 AUCH DAS HIER MUSS IN EIN try. GetFileName wirft bei ungueltigen
+    # 🔴 AUCH DAS HIER MUSS IN EIN try. GetFileName wirft bei ungültigen
     #    Zeichen im Pfad, und eine Ausnahme aus einem Ereignishandler
     #    beendet mit ErrorActionPreference=Stop die ganze Nachrichtenschleife
     #    - das Fenster ist dann einfach weg, ohne Meldung.
@@ -423,7 +423,7 @@ function Pruefe-Eingabe {
 }
 
 Leistenknopf 'Hinzufügen' 105 {
-    Spur ('Hinzufuegen gedrueckt: Name=[' + $fName.Text + '] Ziel=[' + $fZiel.Text +
+    Spur ('Hinzufügen gedrückt: Name=[' + $fName.Text + '] Ziel=[' + $fZiel.Text +
           '] Symbol=[' + $script:aktuellesSymbol + ']')
     if (-not (Pruefe-Eingabe)) { Spur ('  abgelehnt: ' + $meldung.Text); return }
     [void]$eintraege.Add([PSCustomObject]@{
@@ -437,7 +437,7 @@ Leistenknopf 'Hinzufügen' 105 {
 }
 
 Leistenknopf 'Übernehmen' 105 {
-    Spur ('Übernehmen gedrueckt: Index=' + $script:aktuellerIndex +
+    Spur ('Übernehmen gedrückt: Index=' + $script:aktuellerIndex +
           ' Name=[' + $fName.Text + '] Symbol=[' + $script:aktuellesSymbol + ']')
     # 🔴 Tim, 07.09.: „DA kann keinen neuen Eintrag speichern, alle Felder
     #    ausgefüllt, immer noch ,Erst einen Eintrag in der Liste wählen'".
@@ -555,10 +555,10 @@ Leistenknopf 'Symbol wählen ...' 140 {
     if (Test-Path $ablage) { Remove-Item $ablage -Force }
     # ⚠️ NICHT das ganze Fenster sperren. Die Galerie braucht ein paar
     #    Sekunden bis sie sichtbar ist, und ein gesperrtes Fenster ohne
-    #    sichtbaren Grund wirkt wie ein abgestuerztes Programm. Es reicht,
+    #    sichtbaren Grund wirkt wie ein abgestürztes Programm. Es reicht,
     #    die Knopfleiste zu sperren.
     $meldung.ForeColor = [System.Drawing.Color]::DimGray
-    $meldung.Text = 'Symbolgalerie wird geoeffnet, das dauert einen Moment ...'
+    $meldung.Text = 'Symbolgalerie wird geöffnet, das dauert einen Moment ...'
     $leiste.Enabled = $false
     $f.Cursor = [System.Windows.Forms.Cursors]::AppStarting
     $f.Refresh()
@@ -566,7 +566,7 @@ Leistenknopf 'Symbol wählen ...' 140 {
         $argumente = @('-NoProfile', '-ExecutionPolicy', 'Bypass',
                        '-File', ('"' + $galerieSkript + '"'))
         # Das bereits eingestellte Symbol mitgeben, damit die Galerie es
-        # markiert oeffnet statt bei Null anzufangen.
+        # markiert öffnet statt bei Null anzufangen.
         if ($script:aktuellesSymbol) {
             $argumente += @('-Vorgabe', ('"' + $script:aktuellesSymbol + '"'))
         }
@@ -580,7 +580,7 @@ Leistenknopf 'Symbol wählen ...' 140 {
         if (Test-Path $ablage) {
             $script:aktuellesSymbol = (Get-Content $ablage -Raw -Encoding UTF8).Trim()
             Remove-Item $ablage -Force
-            Spur ('Symbol gewaehlt: ' + $script:aktuellesSymbol)
+            Spur ('Symbol gewählt: ' + $script:aktuellesSymbol)
             Zeige-Vorschau $fZiel.Text $script:aktuellesSymbol
 
             # 🔴 Das Symbol SOFORT in den markierten Eintrag schreiben.
@@ -663,9 +663,9 @@ Leistenknopf 'Speichern und schließen' 180 {
             return
         }
     }
-    # ⚠️ Wer im Formular etwas aendert und direkt auf Speichern geht, hat
+    # ⚠️ Wer im Formular etwas ändert und direkt auf Speichern geht, hat
     #    sonst umsonst getippt. Deshalb den markierten Eintrag vorher
-    #    stillschweigend nachziehen - aber nur, wenn die Eingaben gueltig sind.
+    #    stillschweigend nachziehen - aber nur, wenn die Eingaben gültig sind.
     if ($script:aktuellerIndex -ge 0 -and $script:aktuellerIndex -lt $eintraege.Count) {
         $i = $script:aktuellerIndex
         $e = $eintraege[$i]
@@ -683,7 +683,7 @@ Leistenknopf 'Speichern und schließen' 180 {
         }
     }
     $mitSymbol = @($eintraege | Where-Object { $_.Symbol }).Count
-    Spur ('Speichern: ' + $eintraege.Count + ' Eintraege, davon ' + $mitSymbol + ' mit eigenem Symbol')
+    Spur ('Speichern: ' + $eintraege.Count + ' Einträge, davon ' + $mitSymbol + ' mit eigenem Symbol')
     Schreib-Eintraege $eintraege
     Spur 'gespeichert'
     $f.Close()
@@ -764,7 +764,7 @@ Aktualisiere-Gruppen
 Fuelle-Liste
 Spur 'Fenster anzeigen'
 $f.Add_Shown({
-    Spur ('erschienen, Groesse=' + $f.Size + ' Ort=' + $f.Location)
+    Spur ('erschienen, Größe=' + $f.Size + ' Ort=' + $f.Location)
     $f.WindowState = 'Normal'
     $f.Activate()
 })
@@ -783,7 +783,7 @@ $f.Add_FormClosing({
     param($absender, $daten)
     Spur ('UNBEHANDELT: ' + $daten.ExceptionObject)
 })
-# DA-20260913-163439041-83d7: erst faerben, dann zeigen --
+# DA-20260913-163439041-83d7: erst färben, dann zeigen --
 # nach dem vollständigen Aufbau, damit jedes Bauteil steht.
 QA-Dunkel $f
 

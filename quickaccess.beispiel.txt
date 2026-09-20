@@ -10,9 +10,9 @@
 #   Name = Ziel | Quelle,Nr  eigenes Symbol, z.B. shell32.dll,44
 #   Ziel                     ohne "=": der Dateiname wird zum Namen
 #
-# Umgebungsvariablen in Prozentzeichen werden aufgeloest, die Liste
+# Umgebungsvariablen in Prozentzeichen werden aufgelöst, die Liste
 # funktioniert also auf jedem Rechner. Ziele, die mit "shell:" beginnen,
-# oeffnet der Explorer (Sonderorte wie der Papierkorb).
+# öffnet der Explorer (Sonderorte wie der Papierkorb).
 
 [Start]
 Dokumente = %USERPROFILE%\Documents

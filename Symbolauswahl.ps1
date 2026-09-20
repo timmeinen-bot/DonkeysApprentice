@@ -212,7 +212,7 @@ $f.AcceptButton = $knopfOk
 $f.CancelButton = $knopfAbbruch
 
 function Erstauswahl {
-# Bereits eingestelltes Symbol vorwaehlen, damit sichtbar ist, was gilt.
+# Bereits eingestelltes Symbol vorwählen, damit sichtbar ist, was gilt.
 $vorgewaehlt = $false
 if ($Vorgabe) {
     $teile = $Vorgabe -split ','
@@ -230,7 +230,7 @@ if ($Vorgabe) {
             if ($QUELLEN[$name] -eq $vQuelle) { $treffer = $name; break }
         }
         if ($treffer -and $auswahlQuelle.Items.Contains($treffer)) {
-            $auswahlQuelle.SelectedItem = $treffer      # loest das Laden aus
+            $auswahlQuelle.SelectedItem = $treffer      # löst das Laden aus
         } else {
             Lade-Galerie $vQuelle
         }
@@ -250,9 +250,9 @@ if (-not $vorgewaehlt -and $auswahlQuelle.Items.Count -gt 0 -and $galerie.Items.
 }
 
 # 🔴 ERST ZEIGEN, DANN LADEN. Vorher lief das Laden von 335 Symbolen
-#    noch vor ShowDialog - das Fenster erschien mehrere Sekunden spaeter,
+#    noch vor ShowDialog - das Fenster erschien mehrere Sekunden später,
 #    während die Verwaltung schon gesperrt war. Von aussen sah das aus
-#    wie ein haengendes Programm.
+#    wie ein hängendes Programm.
 $f.Add_Shown({
     $f.Activate()
     # Ein frisch gestarteter Prozess landet sonst hinter dem Fenster, das
@@ -263,12 +263,12 @@ $f.Add_Shown({
     $f.Refresh()
     try { Erstauswahl; Spur 'Erstauswahl fertig' }
     catch { Spur ('Erstauswahl gescheitert: ' + $_.Exception.Message) }
-    Spur ('Zustand: Eintraege=' + $galerie.Items.Count +
+    Spur ('Zustand: Einträge=' + $galerie.Items.Count +
           ' markiert=' + $galerie.SelectedItems.Count +
           ' Übernehmen-aktiv=' + $knopfOk.Enabled +
           ' Ergebnis=[' + $script:ergebnis + ']')
 })
-# DA-20260913-163439041-83d7: erst faerben, dann zeigen.
+# DA-20260913-163439041-83d7: erst färben, dann zeigen.
 QA-Dunkel $f
 [void]$f.ShowDialog()
 

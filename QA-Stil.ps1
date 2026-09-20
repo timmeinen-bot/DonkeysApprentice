@@ -2,15 +2,15 @@
 #
 # DA-20260913-163439041-83d7: Die Verwaltung sah aus wie ein fremdes
 # Programm -- Windows-Grau gegen das dunkle Overlay. Zwei Kopien
-# derselben fuenf Farbwerte driften auseinander, sobald eine angefasst
+# derselben fünf Farbwerte driften auseinander, sobald eine angefasst
 # wird; deshalb steht die Palette ab hier NUR noch an dieser Stelle.
 #
 # 🔴 Was WinForms nicht hergibt: MessageBox, OpenFileDialog,
 #    FolderBrowserDialog und die VisualBasic-InputBox sind Systemdialoge
-#    und bleiben hell. Das ist keine Nachlaessigkeit, sondern die Grenze.
+#    und bleiben hell. Das ist keine Nachlässigkeit, sondern die Grenze.
 
-# Die Palette braucht System.Drawing. Wer diese Datei laedt,
-# soll sich nicht darum kuemmern müssen.
+# Die Palette braucht System.Drawing. Wer diese Datei lädt,
+# soll sich nicht darum kümmern müssen.
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
@@ -30,7 +30,7 @@ $global:QA_SCHRIFT    = New-Object System.Drawing.Font('Segoe UI', 9.5)
 
 function QA-Dunkel {
     <#
-      Faerbt ein Fenster und ALLES darin. Rekursiv, weil WinForms die
+      Färbt ein Fenster und ALLES darin. Rekursiv, weil WinForms die
       Farbe nicht an jedes Kind vererbt: eine TextBox oder ListView
       bleibt weiss, bis man sie einzeln anfasst.
     #>
@@ -87,7 +87,7 @@ function QA-Dunkel {
                         $e.Bounds.Right - 1, $e.Bounds.Bottom)
                 })
                 # Zeilen und Unterspalten weiter vom System zeichnen lassen:
-                # nur so behaelt die Liste Auswahl, Markierung und Tastatur.
+                # nur so behält die Liste Auswahl, Markierung und Tastatur.
                 $ctrl.Add_DrawItem({ param($absender, $e) $e.DrawDefault = $true })
                 $ctrl.Add_DrawSubItem({ param($absender, $e) $e.DrawDefault = $true })
             }
