@@ -1,27 +1,26 @@
 ﻿# =====================================================================
-#  Symbolgalerie - aus den Windows-Standardsymbolen wählen
+#  Icon gallery - pick from the standard Windows icons
 #
-#  Tim, 04.09.2026: „lass mich aus den typischen windows symbolen wählen"
+#  Tim, 2026-09-04: "let me pick from the typical windows icons"
 #
-#  Zeigt die Symbole der üblichen Windows-Bibliotheken als Kacheln. Ein
-#  Doppelklick übernimmt Quelle und Nummer.
+#  Shows the icons of the usual Windows libraries as tiles. A double-click
+#  applies source and index.
 #
-#  🔴 ExtractAssociatedIcon KANN KEINEN INDEX und liefert immer nur das
-#     erste Symbol einer Datei. Für eine Galerie braucht es ExtractIconEx,
-#     das gezielt das n-te Symbol holt.
-#  🔴 ZWEI ÜBERLADUNGEN MIT GLEICHER ARGUMENTZAHL KANN POWERSHELL NICHT
-#     AUSEINANDERHALTEN: "Es wurden mehrere nicht eindeutige Überladungen
-#     gefunden". Deshalb zwei eigene Namen, beide über EntryPoint auf
-#     dieselbe Windows-Funktion gelegt.
-#  ⚠️ Jedes Handle muss mit DestroyIcon freigegeben werden. Bei 300 Symbolen
-#     je Bibliothek summiert sich das sonst zu einem echten Leck.
+#  🔴 ExtractAssociatedIcon CANNOT TAKE AN INDEX and always returns only
+#     the first icon of a file. A gallery needs ExtractIconEx, which fetches
+#     the n-th icon specifically.
+#  🔴 POWERSHELL CANNOT TELL APART TWO OVERLOADS WITH THE SAME ARGUMENT
+#     COUNT: "Multiple ambiguous overloads found". Hence two distinct names,
+#     both mapped onto the same Windows function via EntryPoint.
+#  ⚠️ Every handle must be released with DestroyIcon. At 300 icons per
+#     library that otherwise adds up to a real leak.
 # =====================================================================
 param([string]$Vorgabe = '')   # bereits eingestelltes Symbol als "quelle,index"
 $ErrorActionPreference = 'Stop'
 
 function Spur($text) {
     try {
-        # Protokoll unter %LOCALAPPDATA%, nicht neben dem Skript
+        # Log under %LOCALAPPDATA%, not next to the script
         # (DA-20260913-144004296-42e6).
         Add-Content -Path (Join-Path (Join-Path $env:LOCALAPPDATA 'QuickAccess') 'galerie.log') -Encoding UTF8 -Value (
             (Get-Date).ToString('HH:mm:ss.fff') + '  ' + $text)
@@ -42,7 +41,7 @@ public static extern bool DestroyIcon(IntPtr handle);
 '@
 
 $SYS = Join-Path $env:SystemRoot 'System32'
-# Die Bibliotheken, in denen die bekannten Windows-Symbole stecken.
+# The libraries that hold the well-known Windows icons.
 $QUELLEN = [ordered]@{
     'Allgemein (shell32)'      = Join-Path $SYS 'shell32.dll'
     'Modern (imageres)'        = Join-Path $SYS 'imageres.dll'
@@ -147,10 +146,10 @@ function Lade-Galerie($pfad) {
     $galerie.BeginUpdate()
     $galerie.Items.Clear()
     $bilder.Images.Clear()
-    # Erst zählen, wie viele Symbole drinstecken.
+    # First count how many icons are in there.
     $anzahl = [QAG.Shell]::ZaehleSymbole($pfad, -1, [IntPtr]::Zero, [IntPtr]::Zero, 0)
-    # ⚠️ Deckel bei 400: manche Bibliotheken enthalten Hunderte, und jedes
-    #    einzeln zu laden dauert sonst spürbar.
+    # ⚠️ Cap at 400: some libraries contain hundreds, and loading each
+    #    one individually would otherwise take noticeably long.
     if ($anzahl -gt 400) { $anzahl = 400 }
     for ($i = 0; $i -lt $anzahl; $i++) {
         $gross = [IntPtr]::Zero; $klein = [IntPtr]::Zero
@@ -166,7 +165,7 @@ function Lade-Galerie($pfad) {
             }
         } catch { }
         finally {
-            # Jedes Handle wieder freigeben - sonst leckt es bei Hunderten.
+            # Release every handle again - otherwise hundreds of them leak.
             if ($gross -ne [IntPtr]::Zero) { [void][QAG.Shell]::DestroyIcon($gross) }
             if ($klein -ne [IntPtr]::Zero) { [void][QAG.Shell]::DestroyIcon($klein) }
         }
@@ -207,12 +206,12 @@ $galerie.Add_DoubleClick({
 $knopfOk.Add_Click({ $f.DialogResult = 'OK'; $f.Close() })
 $knopfAbbruch.Add_Click({ $script:ergebnis = ''; $f.DialogResult = 'Cancel'; $f.Close() })
 
-# Eingabetaste übernimmt, Esc bricht ab.
+# Enter applies, Esc cancels.
 $f.AcceptButton = $knopfOk
 $f.CancelButton = $knopfAbbruch
 
 function Erstauswahl {
-# Bereits eingestelltes Symbol vorwählen, damit sichtbar ist, was gilt.
+# Preselect the icon already configured so it is visible what applies.
 $vorgewaehlt = $false
 if ($Vorgabe) {
     $teile = $Vorgabe -split ','
@@ -224,7 +223,7 @@ if ($Vorgabe) {
         if (Test-Path -LiteralPath $imSystem) { $vQuelle = $imSystem }
     }
     if ($vQuelle -and (Test-Path -LiteralPath $vQuelle)) {
-        # Steht die Quelle in der Aufklappliste? Sonst als eigene Datei laden.
+        # Is the source in the drop-down? Otherwise load it as a separate file.
         $treffer = ''
         foreach ($name in $QUELLEN.Keys) {
             if ($QUELLEN[$name] -eq $vQuelle) { $treffer = $name; break }
@@ -249,14 +248,14 @@ if (-not $vorgewaehlt -and $auswahlQuelle.Items.Count -gt 0 -and $galerie.Items.
 }
 }
 
-# 🔴 ERST ZEIGEN, DANN LADEN. Vorher lief das Laden von 335 Symbolen
-#    noch vor ShowDialog - das Fenster erschien mehrere Sekunden später,
-#    während die Verwaltung schon gesperrt war. Von aussen sah das aus
-#    wie ein hängendes Programm.
+# 🔴 SHOW FIRST, LOAD AFTERWARDS. Loading 335 icons used to happen
+#    before ShowDialog - the window appeared several seconds later while
+#    the management window was already blocked. From the outside that
+#    looked like a hung program.
 $f.Add_Shown({
     $f.Activate()
-    # Ein frisch gestarteter Prozess landet sonst hinter dem Fenster, das
-    # ihn gestartet hat. Kurz nach vorne holen, dann wieder freigeben.
+    # A freshly started process otherwise ends up behind the window that
+    # launched it. Bring it to the front briefly, then release it again.
     $f.TopMost = $true
     $f.TopMost = $false
     $hinweis.Text = 'lade Symbole ...'
@@ -268,17 +267,17 @@ $f.Add_Shown({
           ' Übernehmen-aktiv=' + $knopfOk.Enabled +
           ' Ergebnis=[' + $script:ergebnis + ']')
 })
-# DA-20260913-163439041-83d7: erst färben, dann zeigen.
+# DA-20260913-163439041-83d7: colour first, then show.
 QA-Dunkel $f
 [void]$f.ShowDialog()
 
-# Das Ergebnis geht über eine Datei zurück - der Aufrufer ist ein eigener
-# Prozess und kann keine Variable lesen.
+# The result travels back through a file - the caller is a separate
+# process and cannot read a variable.
 #
-# 🔴 NUR BEI „ÜBERNEHMEN" SCHREIBEN. Die Vorauswahl markiert beim Öffnen
-#    schon einen Eintrag und füllt damit $ergebnis. Ohne die Abfrage auf
-#    DialogResult hätte auch ein Schließen über das Kreuz das Symbol
-#    stillschweigend übernommen.
+# 🔴 ONLY WRITE ON "APPLY". The preselection already highlights an entry
+#    when the window opens and thereby fills $ergebnis. Without the check on
+#    DialogResult, closing the window with the X would have silently applied
+#    that icon.
 $ablage = Join-Path $PSScriptRoot 'symbolauswahl.txt'
 Spur ('Ende: DialogResult=' + $f.DialogResult + ' Ergebnis=[' + $script:ergebnis + ']')
 if ($f.DialogResult -eq [System.Windows.Forms.DialogResult]::OK -and $script:ergebnis) {

@@ -1,30 +1,31 @@
 ﻿# =====================================================================
-#  Donkey's Apprentice - Verwaltung
+#  Donkey's Apprentice - management window
 #
-#  Einträge anlegen, ändern, sortieren, löschen und mit eigenem Symbol
-#  versehen. Die Textdatei bleibt das Format der Wahrheit; dieses Fenster
-#  ist nur ein bequemer Weg dorthin.
+#  Create, edit, reorder and delete entries and give them a custom icon.
+#  The text file remains the authoritative format; this window is only a
+#  convenient way to get there.
 #
-#  Fallen, die hier schon zugeschlagen haben:
-#  🔴 KEINE FESTEN KOORDINATEN FÜR KNÖPFE. Mit festen x-Werten lagen drei
-#     Knöpfe übereinander. Ein FlowLayoutPanel ordnet sie selbst.
-#  🔴 NICHT MIT -WindowStyle Hidden STARTEN - das versteckt auch das
-#     Formular. Die Konsole blendet das Skript selbst aus.
-#  🔴 Application::Run BRAUCHT DAS FORMULAR ALS ARGUMENT, sonst endet die
-#     Schleife sofort und das Fenster verschwindet im selben Moment.
-#  🔴 StartPosition = CenterScreen landete außerhalb des sichtbaren
-#     Bereichs - feste Position ist verlässlicher.
+#  Traps that have already caught us here:
+#  🔴 NO FIXED COORDINATES FOR BUTTONS. With fixed x values three
+#     buttons ended up stacked on each other. A FlowLayoutPanel arranges
+#     them by itself.
+#  🔴 DO NOT START WITH -WindowStyle Hidden - that hides the form too.
+#     The script hides the console itself.
+#  🔴 Application::Run NEEDS THE FORM AS ITS ARGUMENT, otherwise the
+#     loop ends at once and the window vanishes in the same moment.
+#  🔴 StartPosition = CenterScreen ended up outside the visible area -
+#     a fixed position is more reliable.
 # =====================================================================
 $ErrorActionPreference = 'Stop'
 
-# PSScriptRoot ist bei -File zuverlässiger als MyInvocation.
+# With -File, PSScriptRoot is more reliable than MyInvocation.
 $BASIS = $PSScriptRoot
 if (-not $BASIS) { $BASIS = Split-Path -Parent $MyInvocation.MyCommand.Path }
-# 🔴 Kein fester Benutzerpfad als Rückfall -- der trug bis zum
-#    13.09.2026 Tims Profilnamen im Quelltext aus (DA 2/9) und wäre auf
-#    jedem anderen Rechner falsch gewesen.
+# 🔴 No hard-coded user path as a fallback -- until 2026-09-13 it
+#    carried the owner's profile name in the source (DA 2/9) and would
+#    have been wrong on any other machine.
 if (-not $BASIS) { $BASIS = Join-Path $env:LOCALAPPDATA 'QuickAccess' }
-# Geschrieben wird nur unter %LOCALAPPDATA% (DA-20260913-144004296-42e6).
+# Writing happens only under %LOCALAPPDATA% (DA-20260913-144004296-42e6).
 $DATEN = Join-Path $env:LOCALAPPDATA 'QuickAccess'
 if (-not (Test-Path -LiteralPath $DATEN)) {
     New-Item -ItemType Directory -Force -Path $DATEN | Out-Null
@@ -40,7 +41,7 @@ function Spur($text) {
 }
 Spur 'Start'
 
-# Nur das Konsolenfenster ausblenden, nicht den ganzen Prozess.
+# Hide only the console window, not the whole process.
 Add-Type -Namespace QA -Name Fenster -MemberDefinition @'
 [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
 [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr handle, int zustand);
@@ -50,11 +51,11 @@ if ($konsole -ne [IntPtr]::Zero) { [void][QA.Fenster]::ShowWindow($konsole, 0) }
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-# Für die einfache Eingabebox beim Umbenennen einer Gruppe.
+# For the simple input box used when renaming a group.
 Add-Type -AssemblyName Microsoft.VisualBasic
 
-# ExtractAssociatedIcon kann KEINEN Index und liefert immer nur das erste
-# Symbol einer Datei. Für "shell32.dll,44" braucht es ExtractIconEx.
+# ExtractAssociatedIcon cannot take an index and always returns only the
+# first icon of a file. "shell32.dll,44" needs ExtractIconEx.
 Add-Type -Namespace QA -Name Symbole -MemberDefinition @'
 [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
 public static extern int ExtractIconExW(string datei, int index, out IntPtr gross, out IntPtr klein, int anzahl);
@@ -63,7 +64,7 @@ public static extern bool DestroyIcon(IntPtr handle);
 '@
 
 function Hol-Symbol($quelle, $index) {
-    # Gibt ein Bitmap zurück oder $null. Das Handle wird immer freigegeben.
+    # Returns a bitmap or $null. The handle is always released.
     $gross = [IntPtr]::Zero; $klein = [IntPtr]::Zero
     try {
         $n = [QA.Symbole]::ExtractIconExW($quelle, [int]$index, [ref]$gross, [ref]$klein, 1)
@@ -79,9 +80,9 @@ function Hol-Symbol($quelle, $index) {
 }
 
 # ---------------------------------------------------------------------
-#  Lesen und Schreiben
-#  Format:  Name = Ziel                    (Symbol des Dokuments)
-#           Name = Ziel | Quelle,Index     (eigenes Symbol)
+#  Reading and writing
+#  Format:  Name = Target                  (the document's own icon)
+#           Name = Target | Source,Index   (custom icon)
 # ---------------------------------------------------------------------
 function Ist-Link($ziel) { return $ziel -match '^(https?|mailto|ftp)://|^mailto:' }
 
@@ -89,7 +90,7 @@ function Lies-Eintraege {
     $liste = New-Object System.Collections.ArrayList
     if (-not (Test-Path $KONFIG)) { return $liste }
     $gruppe = ''
-    # ⚠️ Ohne -Encoding UTF8 liest PowerShell 5.1 die Datei als ANSI.
+    # ⚠️ Without -Encoding UTF8, PowerShell 5.1 reads the file as ANSI.
     foreach ($zeile in (Get-Content $KONFIG -Encoding UTF8)) {
         $z = $zeile.Trim()
         if ($z -eq '' -or $z.StartsWith('#')) { continue }
@@ -100,8 +101,8 @@ function Lies-Eintraege {
             $ziel = $z.Substring($i + 1).Trim()
         } else { $name = ''; $ziel = $z }
         if (-not $ziel) { continue }
-        # Der senkrechte Strich ist in Windows-Pfaden verboten und taugt
-        # deshalb als Trenner zum Symbol.
+        # The vertical bar is forbidden in Windows paths, which is why it
+        # works as the separator before the icon.
         $symbol = ''
         $strich = $ziel.IndexOf(' | ')
         if ($strich -ge 0) {
@@ -131,12 +132,12 @@ function Schreib-Eintraege($liste) {
         if ($e.Symbol) { $zeile += ' | ' + $e.Symbol }
         [void]$text.AppendLine($zeile)
     }
-    # ⚠️ UTF-8 MIT Stückliste, sonst kommen die Umlaute falsch zurück.
+    # ⚠️ UTF-8 WITH a byte order mark, otherwise non-ASCII comes back wrong.
     [IO.File]::WriteAllText($KONFIG, $text.ToString(), (New-Object Text.UTF8Encoding $true))
 }
 
 # ---------------------------------------------------------------------
-#  Prüfung einer Zeile. Rückgabe: Meldung oder $null.
+#  Validation of one line. Returns: a message or $null.
 # ---------------------------------------------------------------------
 function Pruefe($name, $ziel, $liste, $ausser = -1) {
     if (-not $name -or -not $name.Trim()) { return 'Der Name darf nicht leer sein.' }
@@ -161,11 +162,11 @@ function Pruefe($name, $ziel, $liste, $ausser = -1) {
     return $null
 }
 
-# 🔴 PowerShell entrollt eine aus einer Funktion zurückgegebene ArrayList
-#    zu einem FESTEN object[] - dann wirft .Add()/.Clear()/.RemoveAt()
-#    „Die Liste hatte eine feste Größe". Darum hier wieder in eine echte
-#    ArrayList fassen, sonst sind Hinzufügen, Löschen und die
-#    Gruppen-Knöpfe unzuverlässig.
+# 🔴 PowerShell unrolls an ArrayList returned from a function into a
+#    FIXED object[] - after that .Add()/.Clear()/.RemoveAt() throw
+#    "Collection was of a fixed size". So wrap it back into a real
+#    ArrayList here, otherwise adding, deleting and the group buttons
+#    are unreliable.
 $eintraege = [System.Collections.ArrayList]@(Lies-Eintraege)
 Spur ('Einträge: ' + $eintraege.Count)
 
@@ -199,8 +200,9 @@ $liste.Anchor = 'Top,Left,Right,Bottom'
 [void]$liste.Columns.Add('Symbol', 165)
 $f.Controls.Add($liste)
 
-# DA-20260914-093332250-030d: Woran sieht man, warum ein Symbol fehlt?
-# Bis heute gar nicht -- der Grund lag als leere Datei im Dateisystem.
+# DA-20260914-093332250-030d: how do you tell why an icon is missing?
+# Until today you could not -- the reason sat in the file system as an
+# empty file.
 function QA-SymbolZustand($ziel) {
     if (-not $ziel) { return '' }
     if ($ziel -notmatch '^https?://') { return '' }
@@ -239,10 +241,10 @@ function Fuelle-Liste($auswahl = -1) {
             [void]$zeile.SubItems.Add('fehlt')
             $zeile.ForeColor = $FARBE_WARNUNG
         }
-        # DA-20260914-093332250-030d: Steht ein eigenes Symbol da, gilt es.
-        # Sonst zeigt die Spalte, was mit dem Favicon los ist -- statt
-        # pauschal "(Standard)", was drei verschiedene Lagen verdeckte:
-        # geholt, nie versucht, und fehlgeschlagen samt Datum.
+        # DA-20260914-093332250-030d: if a custom icon is set, it wins.
+        # Otherwise the column shows what is going on with the favicon --
+        # instead of a blanket "(default)", which hid three different
+        # states: fetched, never attempted, and failed with a date.
         if ($e.Symbol) {
             [void]$zeile.SubItems.Add([IO.Path]::GetFileName(($e.Symbol -split ',')[0]))
         } else {
@@ -260,7 +262,7 @@ function Fuelle-Liste($auswahl = -1) {
     }
 }
 
-# ─── Eingabefelder ───────────────────────────────────────────────────
+# ─── Input fields ─────────────────────────────────────────────────────
 function Beschriftung($text, $x, $y, $breite) {
     $l = New-Object System.Windows.Forms.Label
     $l.Text = $text
@@ -305,7 +307,7 @@ $knopfOrdner.Size = New-Object System.Drawing.Size(88, 26)
 $knopfOrdner.Anchor = 'Right,Bottom'
 $f.Controls.Add($knopfOrdner)
 
-# ─── Symbolbereich ───────────────────────────────────────────────────
+# ─── Icon area ────────────────────────────────────────────────────────
 $symbolFeld = New-Object System.Windows.Forms.GroupBox
 $symbolFeld.Text = 'Symbol dieses Eintrags'
 $symbolFeld.Location = New-Object System.Drawing.Point(12, 430)
@@ -331,7 +333,7 @@ $symbolFeld.Controls.Add($symbolText)
 $script:aktuellesSymbol = ''
 
 function Zeige-Vorschau($ziel, $symbol) {
-    # Immer zeigen, was tatsächlich gilt: eigenes Symbol, sonst das des Dokuments.
+    # Always show what actually applies: the custom icon, otherwise the document's.
     $bild = $null
     try {
         if ($symbol) {
@@ -344,8 +346,8 @@ function Zeige-Vorschau($ziel, $symbol) {
             $teile = $symbol -split ','
             if ($teile.Count -gt 1) { [void][int]::TryParse($teile[1].Trim(), [ref]$index) }
             if ($quelle -and (Test-Path -LiteralPath $quelle)) {
-                # Hier NICHT ExtractAssociatedIcon nehmen - das zeigt sonst
-                # immer Symbol 0 statt des gewählten.
+                # Do NOT use ExtractAssociatedIcon here - it would always
+                # show icon 0 instead of the chosen one.
                 $bild = Hol-Symbol $quelle $index
                 if (-not $bild) {
                     $bild = ([System.Drawing.Icon]::ExtractAssociatedIcon($quelle)).ToBitmap()
@@ -365,10 +367,10 @@ function Zeige-Vorschau($ziel, $symbol) {
             }
         }
     } catch { Spur ('Vorschau: ' + $_.Exception.Message) }
-    # 🔴 AUCH DAS HIER MUSS IN EIN try. GetFileName wirft bei ungültigen
-    #    Zeichen im Pfad, und eine Ausnahme aus einem Ereignishandler
-    #    beendet mit ErrorActionPreference=Stop die ganze Nachrichtenschleife
-    #    - das Fenster ist dann einfach weg, ohne Meldung.
+    # 🔴 THIS NEEDS A try AS WELL. GetFileName throws on invalid
+    #    characters in a path, and an exception from an event handler ends
+    #    the entire message loop under ErrorActionPreference=Stop - the
+    #    window is then simply gone, without a message.
     try {
         $vorschau.Image = $bild
         if ($symbol) {
@@ -389,7 +391,7 @@ $meldung.Anchor = 'Left,Right,Bottom'
 $meldung.ForeColor = $FARBE_WARNUNG
 $f.Controls.Add($meldung)
 
-# ─── Knopfleiste: ordnet sich selbst, kann nicht überlappen ──────────
+# ─── Button bar: arranges itself, cannot overlap ──────────────────────
 $leiste = New-Object System.Windows.Forms.FlowLayoutPanel
 $leiste.FlowDirection = 'LeftToRight'
 $leiste.WrapContents = $true
@@ -415,7 +417,7 @@ function Pruefe-Eingabe {
         $meldung.Text = $fehler
         $meldung.ForeColor = if ($fehler.StartsWith('HINWEIS')) {
             [System.Drawing.Color]::DarkGoldenrod } else { $FARBE_WARNUNG }
-        # Ein Hinweis blockiert nicht - ein Netzlaufwerk darf gerade fehlen.
+        # A hint does not block - a network drive is allowed to be away.
         return $fehler.StartsWith('HINWEIS')
     }
     $meldung.Text = ''
@@ -439,12 +441,12 @@ Leistenknopf 'Hinzufügen' 105 {
 Leistenknopf 'Übernehmen' 105 {
     Spur ('Übernehmen gedrückt: Index=' + $script:aktuellerIndex +
           ' Name=[' + $fName.Text + '] Symbol=[' + $script:aktuellesSymbol + ']')
-    # 🔴 Tim, 07.09.: „DA kann keinen neuen Eintrag speichern, alle Felder
-    #    ausgefüllt, immer noch ,Erst einen Eintrag in der Liste wählen'".
-    #    Wer die Felder ausfüllt und Übernehmen drückt, will speichern -
-    #    ob die Zeile schon existiert oder neu ist, ist seine Sache nicht.
-    #    Ohne Auswahl wird jetzt ein neuer Eintrag angelegt, statt eine
-    #    Meldung zu zeigen, die niemandem weiterhilft.
+    # 🔴 Tim, 09-07: "DA cannot save a new entry, all fields filled in,
+    #    still says 'select an entry in the list first'".
+    #    Someone who fills in the fields and presses Apply wants to save -
+    #    whether the row already exists or is new is not their concern.
+    #    With no selection a new entry is now created, instead of showing
+    #    a message that helps nobody.
     if ($script:aktuellerIndex -lt 0) {
         if (-not (Pruefe-Eingabe)) { Spur ('  abgelehnt: ' + $meldung.Text); return }
         [void]$eintraege.Add([PSCustomObject]@{
@@ -480,11 +482,11 @@ Leistenknopf 'Löschen' 88 {
     }
 }
 
-# ─── Gruppen verwalten (Tim, 07.09.: anlegen/umbenennen/löschen) ──────
-# Neue Gruppe entsteht durch Eintippen im Feld „Gruppe" beim Hinzufügen.
-# Umbenennen und Löschen wirken auf ALLE Einträge der Gruppe auf einmal;
-# Hoch/Runter verschiebt den ganzen Gruppenblock (= Reiter-Reihenfolge im
-# Overlay). Gesichert wird erst mit „Speichern und schließen".
+# ─── Group management (Tim, 09-07: create/rename/delete) ──────────────
+# A new group is created by typing into the "Gruppe" field when adding.
+# Renaming and deleting affect ALL entries of the group at once; up/down
+# moves the whole group block (= tab order in the overlay). Nothing is
+# persisted until "Speichern und schliessen".
 function Aktuelle-Gruppe {
     if ($script:aktuellerIndex -ge 0 -and $script:aktuellerIndex -lt $eintraege.Count) {
         return $eintraege[$script:aktuellerIndex].Gruppe
@@ -543,8 +545,8 @@ Leistenknopf 'Gruppe ▲' 92 { Verschiebe-Gruppe -1 }
 Leistenknopf 'Gruppe ▼' 92 { Verschiebe-Gruppe 1 }
 
 Leistenknopf 'Symbol wählen ...' 140 {
-    # Die Galerie läuft als eigener Prozess und gibt ihr Ergebnis über
-    # eine kleine Datei zurück - eine Variable kann sie nicht teilen.
+    # The gallery runs as its own process and returns its result through
+    # a small file - it cannot share a variable.
     $galerieSkript = Join-Path $BASIS 'Symbolauswahl.ps1'
     $ablage = Join-Path $BASIS 'symbolauswahl.txt'
     if (-not (Test-Path $galerieSkript)) {
@@ -553,10 +555,10 @@ Leistenknopf 'Symbol wählen ...' 140 {
         return
     }
     if (Test-Path $ablage) { Remove-Item $ablage -Force }
-    # ⚠️ NICHT das ganze Fenster sperren. Die Galerie braucht ein paar
-    #    Sekunden bis sie sichtbar ist, und ein gesperrtes Fenster ohne
-    #    sichtbaren Grund wirkt wie ein abgestürztes Programm. Es reicht,
-    #    die Knopfleiste zu sperren.
+    # ⚠️ Do NOT disable the whole window. The gallery takes a few
+    #    seconds to become visible, and a disabled window with no visible
+    #    reason looks like a crashed program. Disabling the button bar is
+    #    enough.
     $meldung.ForeColor = [System.Drawing.Color]::DimGray
     $meldung.Text = 'Symbolgalerie wird geöffnet, das dauert einen Moment ...'
     $leiste.Enabled = $false
@@ -565,8 +567,8 @@ Leistenknopf 'Symbol wählen ...' 140 {
     try {
         $argumente = @('-NoProfile', '-ExecutionPolicy', 'Bypass',
                        '-File', ('"' + $galerieSkript + '"'))
-        # Das bereits eingestellte Symbol mitgeben, damit die Galerie es
-        # markiert öffnet statt bei Null anzufangen.
+        # Pass in the icon already configured so the gallery opens with it
+        # selected instead of starting from scratch.
         if ($script:aktuellesSymbol) {
             $argumente += @('-Vorgabe', ('"' + $script:aktuellesSymbol + '"'))
         }
@@ -583,10 +585,10 @@ Leistenknopf 'Symbol wählen ...' 140 {
             Spur ('Symbol gewählt: ' + $script:aktuellesSymbol)
             Zeige-Vorschau $fZiel.Text $script:aktuellesSymbol
 
-            # 🔴 Das Symbol SOFORT in den markierten Eintrag schreiben.
-            #    Vorher landete es nur in einer Variablen und war weg, wenn
-            #    jemand direkt auf Speichern ging statt auf Übernehmen -
-            #    genau so ist es am 06.09. passiert, ohne jede Meldung.
+            # 🔴 Write the icon into the selected entry IMMEDIATELY.
+            #    It used to land only in a variable and was lost when
+            #    someone went straight to Save instead of Apply - which is
+            #    exactly what happened on 09-06, without any message.
             if ($script:aktuellerIndex -ge 0 -and $script:aktuellerIndex -lt $eintraege.Count) {
                 $eintraege[$script:aktuellerIndex].Symbol = $script:aktuellesSymbol
                 $merke = $script:aktuellerIndex
@@ -638,7 +640,7 @@ Leistenknopf 'Nach unten' 95 {
 Leistenknopf 'Textdatei öffnen' 130 { Start-Process notepad.exe $KONFIG }
 
 Leistenknopf 'Speichern und schließen' 180 {
-    # Vor dem Schreiben ALLE Zeilen prüfen, nicht nur die zuletzt bearbeitete.
+    # Validate ALL rows before writing, not just the last one edited.
     $probleme = @()
     for ($i = 0; $i -lt $eintraege.Count; $i++) {
         $pr = Pruefe $eintraege[$i].Name $eintraege[$i].Ziel $eintraege $i
@@ -650,8 +652,8 @@ Leistenknopf 'Speichern und schließen' 180 {
             $script:TITEL, 'OK', 'Warning') | Out-Null
         return
     }
-    # ⚠️ Zwei offene Verwaltungsfenster überschreiben sich beim Speichern
-    #    gegenseitig - der zuletzt Speichernde gewinnt, der andere Stand ist weg.
+    # ⚠️ Two open management windows overwrite each other on save -
+    #    the last one to save wins, the other state is gone.
     $andere = @(Get-Process powershell -ErrorAction SilentlyContinue |
         Where-Object { $_.MainWindowTitle -like '*Apprentice*' -and $_.Id -ne $PID })
     if ($andere.Count -gt 0) {
@@ -663,9 +665,9 @@ Leistenknopf 'Speichern und schließen' 180 {
             return
         }
     }
-    # ⚠️ Wer im Formular etwas ändert und direkt auf Speichern geht, hat
-    #    sonst umsonst getippt. Deshalb den markierten Eintrag vorher
-    #    stillschweigend nachziehen - aber nur, wenn die Eingaben gültig sind.
+    # ⚠️ Anyone who edits the form and goes straight to Save would
+    #    otherwise have typed in vain. So quietly commit the selected entry
+    #    first - but only if the input is valid.
     if ($script:aktuellerIndex -ge 0 -and $script:aktuellerIndex -lt $eintraege.Count) {
         $i = $script:aktuellerIndex
         $e = $eintraege[$i]
@@ -691,7 +693,7 @@ Leistenknopf 'Speichern und schließen' 180 {
 
 Leistenknopf 'Abbrechen' 95 { $f.Close() }
 
-# ─── Auswahl, Dateidialoge, Prüfung bei jeder Eingabe ────────────────
+# ─── Selection, file dialogs, validation on every keystroke ───────────
 $knopfDatei.Add_Click({
     $d = New-Object System.Windows.Forms.OpenFileDialog
     $d.Title = 'Welche Datei soll in den Schnellzugriff?'
@@ -724,7 +726,7 @@ $liste.Add_SelectedIndexChanged({
     Zeige-Vorschau $eintraege[$i].Ziel $eintraege[$i].Symbol
 })
 
-# ─── Sortieren mit gedrückter Maus ───────────────────────────────────
+# ─── Drag-and-drop reordering ─────────────────────────────────────────
 $script:gezogen = -1
 $liste.Add_ItemDrag({
     if ($liste.SelectedIndices.Count -eq 0) { return }
@@ -743,8 +745,8 @@ $liste.Add_DragDrop({
     $eintraege.RemoveAt($script:gezogen)
     if ($neuerPlatz -gt $eintraege.Count) { $neuerPlatz = $eintraege.Count }
     $eintraege.Insert($neuerPlatz, $e)
-    # Gruppe des neuen Nachbarn übernehmen, sonst springt der Eintrag beim
-    # Speichern optisch woanders hin.
+    # Adopt the new neighbour's group, otherwise the entry visually jumps
+    # somewhere else on save.
     if ($neuerPlatz -gt 0) { $e.Gruppe = $eintraege[$neuerPlatz - 1].Gruppe }
     $script:gezogen = -1
     $script:aktuellerIndex = $neuerPlatz
@@ -768,13 +770,13 @@ $f.Add_Shown({
     $f.WindowState = 'Normal'
     $f.Activate()
 })
-# Wer schliesst das Fenster? CloseReason nennt den Verursacher.
+# Who is closing the window? CloseReason names the cause.
 $f.Add_FormClosing({
     Spur ('schliesst, Grund=' + $_.CloseReason + ' DialogResult=' + $f.DialogResult)
     Spur ('  Aufrufkette: ' + ((Get-PSCallStack | Select-Object -First 4 |
         ForEach-Object { $_.Command + ':' + $_.ScriptLineNumber }) -join ' < '))
 })
-# Unbehandelte Fehler in Ereignissen beenden sonst stumm die Schleife.
+# Unhandled errors in events would otherwise end the loop silently.
 [System.Windows.Forms.Application]::add_ThreadException({
     param($absender, $daten)
     Spur ('THREAD-FEHLER: ' + $daten.Exception.Message)
@@ -783,10 +785,10 @@ $f.Add_FormClosing({
     param($absender, $daten)
     Spur ('UNBEHANDELT: ' + $daten.ExceptionObject)
 })
-# DA-20260913-163439041-83d7: erst färben, dann zeigen --
-# nach dem vollständigen Aufbau, damit jedes Bauteil steht.
+# DA-20260913-163439041-83d7: colour first, then show -- after the layout
+# is complete, so every control is in place.
 QA-Dunkel $f
 
-# Application::Run BRAUCHT das Formular als Argument.
+# Application::Run NEEDS the form as its argument.
 [System.Windows.Forms.Application]::Run($f)
 Spur 'geschlossen'

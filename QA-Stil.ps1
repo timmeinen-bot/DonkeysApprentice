@@ -1,16 +1,16 @@
-﻿# QA-Stil.ps1 -- eine Quelle für das Aussehen aller DA-Fenster.
+﻿# QA-Stil.ps1 -- one source for the look of every DA window.
 #
-# DA-20260913-163439041-83d7: Die Verwaltung sah aus wie ein fremdes
-# Programm -- Windows-Grau gegen das dunkle Overlay. Zwei Kopien
-# derselben fünf Farbwerte driften auseinander, sobald eine angefasst
-# wird; deshalb steht die Palette ab hier NUR noch an dieser Stelle.
+# DA-20260913-163439041-83d7: the management window looked like a
+# different program -- Windows grey against the dark overlay. Two copies
+# of the same five colour values drift apart as soon as one is touched,
+# so from here on the palette lives in this one place only.
 #
-# 🔴 Was WinForms nicht hergibt: MessageBox, OpenFileDialog,
-#    FolderBrowserDialog und die VisualBasic-InputBox sind Systemdialoge
-#    und bleiben hell. Das ist keine Nachlässigkeit, sondern die Grenze.
+# 🔴 What WinForms does not offer: MessageBox, OpenFileDialog,
+#    FolderBrowserDialog and the VisualBasic InputBox are system dialogs
+#    and stay light. That is not sloppiness, that is the limit.
 
-# Die Palette braucht System.Drawing. Wer diese Datei lädt,
-# soll sich nicht darum kümmern müssen.
+# The palette needs System.Drawing. Whoever loads this file should not
+# have to care about that.
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
@@ -19,8 +19,8 @@ $global:FARBE_HOVER   = [System.Drawing.Color]::FromArgb(58, 58, 66)
 $global:FARBE_TEXT    = [System.Drawing.Color]::FromArgb(240, 240, 240)
 $global:FARBE_GRUPPE  = [System.Drawing.Color]::FromArgb(150, 150, 160)
 $global:FARBE_FEHLT   = [System.Drawing.Color]::FromArgb(130, 130, 130)
-# Eingabefelder etwas tiefer als der Grund, damit sie als Felder lesbar
-# bleiben; Rot auf dunklem Grund wäre Firebrick -- zu dunkel.
+# Input fields sit slightly darker than the background so they still
+# read as fields; red on a dark ground would be firebrick -- too dark.
 $global:FARBE_FELD    = [System.Drawing.Color]::FromArgb(40, 40, 46)
 $global:FARBE_RAND    = [System.Drawing.Color]::FromArgb(70, 70, 80)
 $global:FARBE_WARNUNG = [System.Drawing.Color]::FromArgb(240, 150, 150)
@@ -30,9 +30,9 @@ $global:QA_SCHRIFT    = New-Object System.Drawing.Font('Segoe UI', 9.5)
 
 function QA-Dunkel {
     <#
-      Färbt ein Fenster und ALLES darin. Rekursiv, weil WinForms die
-      Farbe nicht an jedes Kind vererbt: eine TextBox oder ListView
-      bleibt weiss, bis man sie einzeln anfasst.
+      Colours a window and EVERYTHING inside it. Recursive, because
+      WinForms does not pass the colour on to every child: a TextBox or
+      ListView stays white until you touch it individually.
     #>
     param($ctrl)
     if ($null -eq $ctrl) { return }
@@ -65,8 +65,8 @@ function QA-Dunkel {
             $ctrl.Font = $global:QA_SCHRIFT
             $ctrl.GridLines = $false
             $ctrl.FullRowSelect = $true
-            # 🔴 Der Spaltenkopf einer ListView ignoriert BackColor --
-            # er bleibt weiss, bis man ihn selbst zeichnet.
+            # 🔴 A ListView's column header ignores BackColor --
+            # it stays white until you draw it yourself.
             if (-not $ctrl.OwnerDraw) {
                 $ctrl.OwnerDraw = $true
                 $ctrl.Add_DrawColumnHeader({
@@ -86,8 +86,9 @@ function QA-Dunkel {
                         $e.Bounds.Right - 1, $e.Bounds.Top,
                         $e.Bounds.Right - 1, $e.Bounds.Bottom)
                 })
-                # Zeilen und Unterspalten weiter vom System zeichnen lassen:
-                # nur so behält die Liste Auswahl, Markierung und Tastatur.
+                # Let the system keep drawing rows and sub-items: that is
+                # the only way the list keeps selection, highlighting and
+                # keyboard handling.
                 $ctrl.Add_DrawItem({ param($absender, $e) $e.DrawDefault = $true })
                 $ctrl.Add_DrawSubItem({ param($absender, $e) $e.DrawDefault = $true })
             }
