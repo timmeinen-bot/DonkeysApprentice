@@ -1,5 +1,8 @@
 # Donkey's Apprentice
 
+<img src="assets/eselchen-labs.png" align="right" width="110" alt="Eselchen Labs">
+
+
 A small tray tool: hover over the donkey icon and it shows a list of your most
 important files, folders and links. One click opens the entry.
 
